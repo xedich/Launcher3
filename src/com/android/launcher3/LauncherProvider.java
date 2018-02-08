@@ -87,7 +87,8 @@ public class LauncherProvider extends ContentProvider {
      */
     public static final int SCHEMA_VERSION = 27;
 
-    public static final String AUTHORITY = (BuildConfig.APPLICATION_ID + ".settings").intern();
+    // public static final String AUTHORITY = (BuildConfig.APPLICATION_ID + ".settings").intern();
+    public static final String AUTHORITY = "com.google.android.apps.nexuslauncher.settings";
 
     static final String EMPTY_DATABASE_CREATED = "EMPTY_DATABASE_CREATED";
 
