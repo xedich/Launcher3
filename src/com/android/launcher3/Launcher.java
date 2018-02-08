@@ -2231,6 +2231,13 @@ public class Launcher extends BaseActivity
 
             // Back button is a no-op here, but give at least some feedback for the button press
             mWorkspace.showOutlinesTemporarily();
+
+            int previousPage = mWorkspace.getCurrentPage() - 1;
+            if (previousPage >= 0) {
+                mWorkspace.snapToPage(previousPage);
+            } else {
+                super.onBackPressed();
+            }
         }
     }
 
