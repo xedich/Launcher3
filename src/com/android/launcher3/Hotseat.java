@@ -21,7 +21,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -75,6 +74,11 @@ public class Hotseat extends FrameLayout
         if (!FeatureFlags.LAUNCHER3_GRADIENT_ALL_APPS) {
             setBackground(mBackground);
         }
+        LayoutInflater inflater = LayoutInflater.from(getContext());
+        mSettingsView = (TextView)
+                inflater.inflate(com.android.launcher3.R.layout.all_apps_button, mContent, false);
+        mAddView = (TextView)
+                inflater.inflate(com.android.launcher3.R.layout.all_apps_button, mContent, false);
     }
 
     public CellLayout getLayout() {
@@ -161,6 +165,14 @@ public class Hotseat extends FrameLayout
             lp.canReorder = false;
             mContent.addViewToCellLayout(allAppsButton, -1, allAppsButton.getId(), lp, true);
         }
+
+        Drawable settingsDrawable = getResources().getDrawable(R.drawable.ic_hotseat_settings);
+        Drawable addAppDrawable = getResources().getDrawable(R.drawable.ic_hotseat_addapp);
+
+        Drawable d = getResources().getDrawable(R.drawable.all_apps_button_icon);
+
+        addViewToHotseat(mAddView, addAppDrawable, 0);
+        addViewToHotseat(mSettingsView, settingsDrawable, 1);
     }
 
     @Override
@@ -221,5 +233,41 @@ public class Hotseat extends FrameLayout
 
     public int getBackgroundDrawableColor() {
         return mBackgroundColor;
+    }
+
+    private TextView mSettingsView;
+    private TextView mAddView;
+
+    public void setSettingClickListener(OnClickListener onClickListener) {
+        mSettingsView.setOnClickListener(onClickListener);
+    }
+
+    public void setAddAppClickListener(OnClickListener onClickListener) {
+        mAddView.setOnClickListener(onClickListener);
+    }
+
+    void addViewToHotseat(TextView textView, Drawable icon, int rank) {
+
+        // Add the Apps button
+        Context context = getContext();
+        DeviceProfile grid = mLauncher.getDeviceProfile();
+
+        icon.setBounds(0, 0, grid.iconSizePx, grid.iconSizePx);
+
+        int scaleDownPx = getResources().getDimensionPixelSize(com.android.launcher3.R.dimen.all_apps_button_scale_down);
+        Rect bounds = icon.getBounds();
+        icon.setBounds(bounds.left, bounds.top + scaleDownPx / 2, bounds.right - scaleDownPx,
+                bounds.bottom - scaleDownPx / 2);
+        textView.setCompoundDrawables(null, icon, null, null);
+
+        textView.setContentDescription(context.getString(com.android.launcher3.R.string.all_apps_button_label));
+        // allAppsButton.setOnKeyListener(new HotseatIconKeyEventListener());
+        textView.setOnFocusChangeListener(mLauncher.mFocusHandler);
+
+        int x = getCellXFromOrder(rank);
+        int y = getCellYFromOrder(rank);
+
+        CellLayout.LayoutParams lp = new CellLayout.LayoutParams(x, y, 1, 1);
+        mContent.addViewToCellLayout(textView, -1, 0, lp, true);
     }
 }
