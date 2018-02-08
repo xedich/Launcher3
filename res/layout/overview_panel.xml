@@ -38,6 +38,7 @@
         android:stateListAnimator="@animator/overview_button_anim"
         android:text="@string/wallpaper_button_text"
         android:textAllCaps="true"
+        android:visibility="gone"
         android:textColor="?attr/workspaceTextColor"
         android:textSize="12sp" />
 
@@ -47,7 +48,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:drawablePadding="4dp"
-        android:drawableTop="@drawable/ic_widget"
+        android:drawableTop="@drawable/ic_add_app"
         android:drawableTint="?attr/workspaceTextColor"
         android:fontFamily="sans-serif-condensed"
         android:gravity="center_horizontal"
