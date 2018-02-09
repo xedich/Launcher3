@@ -1,5 +1,6 @@
 package com.android.launcher3.popup;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -14,6 +15,7 @@ import com.android.launcher3.R;
 import com.android.launcher3.model.WidgetItem;
 import com.android.launcher3.util.PackageUserKey;
 import com.android.launcher3.widget.WidgetsBottomSheet;
+import com.lody.virtual.client.core.VirtualCore;
 
 import java.util.List;
 
@@ -91,6 +93,77 @@ public abstract class SystemShortcut extends ItemInfo {
                     InfoDropTarget.startDetailsActivityForInfo(itemInfo, launcher, null, sourceBounds, opts);
                     launcher.getUserEventDispatcher().logActionOnControl(Action.Touch.TAP,
                             ControlType.APPINFO_TARGET, view);
+                }
+            };
+        }
+    }
+
+    public static class KillApp extends SystemShortcut {
+
+        public KillApp() {
+            super(R.drawable.ic_kill_app, R.string.kill_app_label);
+        }
+
+        @Override
+        public View.OnClickListener getOnClickListener(Launcher launcher, ItemInfo itemInfo) {
+            final String packageName = itemInfo.getTargetComponent().getPackageName();
+
+            return v -> {
+                AbstractFloatingView topView = AbstractFloatingView.getTopOpenView(launcher);
+                if (topView instanceof PopupContainerWithArrow) {
+                    // 1. first close the menu
+                    topView.close(true);
+                    // 2. show alert
+
+                    AlertDialog alertDialog = new AlertDialog.Builder(launcher)
+                            .setTitle(R.string.home_menu_kill_title)
+                            .setMessage(launcher.getResources().getString(R.string.home_menu_kill_content, packageName))
+                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                                        // TODO: 18/2/9 multiuser
+                                        VirtualCore.get().clearPackageAsUser(0, packageName);
+                                    })
+                            .setNegativeButton(android.R.string.no, null)
+                            .create();
+                    try {
+                        alertDialog.show();
+                    } catch (Throwable ignored) {
+                        // BadTokenException.
+                    }
+                }
+            };
+        }
+    }
+
+    public static class ClearApp extends SystemShortcut {
+
+        public ClearApp() {
+            super(R.drawable.ic_clear_app, R.string.clear_app_label);
+        }
+
+        @Override
+        public View.OnClickListener getOnClickListener(final Launcher launcher, ItemInfo itemInfo) {
+            final String packageName = itemInfo.getTargetComponent().getPackageName();
+            return v -> {
+                AbstractFloatingView topView = AbstractFloatingView.getTopOpenView(launcher);
+                if (topView instanceof PopupContainerWithArrow) {
+                    // 1. first close the menu
+                    topView.close(true);
+                    // 2. show alert
+
+                    AlertDialog alertDialog = new AlertDialog.Builder(launcher)
+                            .setTitle(R.string.home_menu_clear_title)
+                            .setMessage(launcher.getString(R.string.home_menu_clear_content, packageName))
+                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                                        // TODO: 18/2/9 multi user
+                                        VirtualCore.get().clearPackageAsUser(0, packageName);
+                                    })
+                            .setNegativeButton(android.R.string.no, null)
+                            .create();
+                    try {
+                        alertDialog.show();
+                    } catch (Throwable ignored) {
+                        // BadTokenException.
+                    }
                 }
             };
         }
