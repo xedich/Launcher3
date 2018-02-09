@@ -137,6 +137,7 @@ import com.android.launcher3.widget.PendingAddWidgetInfo;
 import com.android.launcher3.widget.WidgetAddFlowHandler;
 import com.android.launcher3.widget.WidgetHostViewLoader;
 import com.android.launcher3.widget.WidgetsContainerView;
+import com.lody.virtual.client.ipc.VActivityManager;
 
 
 import java.io.FileDescriptor;
@@ -2702,7 +2703,9 @@ public class Launcher extends BaseActivity
                 startShortcutIntentSafely(intent, optsBundle, item);
             } else if (user == null || user.equals(Process.myUserHandle())) {
                 // Could be launching some bookkeeping activity
-                startActivity(intent, optsBundle);
+                // startActivity(intent, optsBundle);
+                // TODO: 18/2/9 multiuser
+                VActivityManager.get().startActivity(intent, 0);
             } else {
                 LauncherAppsCompat.getInstance(this).startActivityForProfile(
                         intent.getComponent(), user, intent.getSourceBounds(), optsBundle);

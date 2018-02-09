@@ -25,9 +25,10 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.support.annotation.Nullable;
-import com.android.launcher3.Utilities;
+
 import com.android.launcher3.shortcuts.ShortcutInfoCompat;
 import com.android.launcher3.util.PackageUserKey;
+
 import java.util.List;
 
 public abstract class LauncherAppsCompat {
@@ -53,11 +54,12 @@ public abstract class LauncherAppsCompat {
     public static LauncherAppsCompat getInstance(Context context) {
         synchronized (sInstanceLock) {
             if (sInstance == null) {
-                if (Utilities.ATLEAST_OREO) {
+//                if (Utilities.ATLEAST_OREO) {
                     sInstance = new LauncherAppsCompatVO(context.getApplicationContext());
-                } else {
-                    sInstance = new LauncherAppsCompatVL(context.getApplicationContext());
-                }
+//                } else {
+//                    sInstance = new LauncherAppsCompatVL(context.getApplicationContext());
+//                }
+                sInstance = new LauncherAppsCompatForVA();
             }
             return sInstance;
         }

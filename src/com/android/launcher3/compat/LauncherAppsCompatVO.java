@@ -33,7 +33,6 @@ import android.support.annotation.Nullable;
 import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.LauncherModel;
 import com.android.launcher3.ShortcutInfo;
-import com.android.launcher3.compat.ShortcutConfigActivityInfo.ShortcutConfigActivityInfoVO;
 import com.android.launcher3.graphics.LauncherIcons;
 import com.android.launcher3.shortcuts.ShortcutInfoCompat;
 import com.android.launcher3.util.LooperExecutor;
@@ -83,7 +82,7 @@ public class LauncherAppsCompatVO extends LauncherAppsCompatVL {
             for (LauncherActivityInfo activityInfo : activities) {
                 if (ignoreTargetSdk || activityInfo.getApplicationInfo().targetSdkVersion >=
                         Build.VERSION_CODES.O) {
-                    result.add(new ShortcutConfigActivityInfoVO(activityInfo));
+                    result.add(new ShortcutConfigActivityInfo.ShortcutConfigActivityInfoVO(activityInfo));
                 }
             }
         }
