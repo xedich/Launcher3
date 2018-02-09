@@ -119,7 +119,6 @@ import com.android.launcher3.userevent.nano.LauncherLogProto.Action;
 import com.android.launcher3.userevent.nano.LauncherLogProto.ContainerType;
 import com.android.launcher3.userevent.nano.LauncherLogProto.ControlType;
 import com.android.launcher3.util.ActivityResultInfo;
-import com.android.launcher3.util.RunnableWithId;
 import com.android.launcher3.util.ComponentKey;
 import com.android.launcher3.util.ComponentKeyMapper;
 import com.android.launcher3.util.ItemInfoMatcher;
@@ -127,6 +126,7 @@ import com.android.launcher3.util.MultiHashMap;
 import com.android.launcher3.util.PackageManagerHelper;
 import com.android.launcher3.util.PackageUserKey;
 import com.android.launcher3.util.PendingRequestArgs;
+import com.android.launcher3.util.RunnableWithId;
 import com.android.launcher3.util.SystemUiController;
 import com.android.launcher3.util.TestingUtils;
 import com.android.launcher3.util.Themes;
@@ -137,8 +137,6 @@ import com.android.launcher3.widget.PendingAddWidgetInfo;
 import com.android.launcher3.widget.WidgetAddFlowHandler;
 import com.android.launcher3.widget.WidgetHostViewLoader;
 import com.android.launcher3.widget.WidgetsContainerView;
-import com.lody.virtual.client.ipc.VActivityManager;
-
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -2677,6 +2675,10 @@ public class Launcher extends BaseActivity
         return new Rect(pos[0], pos[1], pos[0] + v.getWidth(), pos[1] + v.getHeight());
     }
 
+    public void startVirtualActivity(Intent intent, Bundle options, int usedId) {
+        startActivity(intent, options);
+    }
+
     public boolean startActivitySafely(View v, Intent intent, ItemInfo item) {
         if (mIsSafeModeEnabled && !Utilities.isSystemApp(this, intent)) {
             Toast.makeText(this, R.string.safemode_shortcut_error, Toast.LENGTH_SHORT).show();
@@ -2705,9 +2707,8 @@ public class Launcher extends BaseActivity
                 startShortcutIntentSafely(intent, optsBundle, item);
             } else if (user == null || user.equals(Process.myUserHandle())) {
                 // Could be launching some bookkeeping activity
-                // startActivity(intent, optsBundle);
                 // TODO: 18/2/9 multiuser
-                VActivityManager.get().startActivity(intent, 0);
+                startVirtualActivity(intent, optsBundle, 0);
             } else {
                 LauncherAppsCompat.getInstance(this).startActivityForProfile(
                         intent.getComponent(), user, intent.getSourceBounds(), optsBundle);
