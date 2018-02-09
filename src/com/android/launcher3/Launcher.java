@@ -2238,7 +2238,9 @@ public class Launcher extends BaseActivity
             if (previousPage >= 0) {
                 mWorkspace.snapToPage(previousPage);
             } else {
-                super.onBackPressed();
+                if (!moveTaskToBack(false)) {
+                   super.onBackPressed();
+                }
             }
         }
     }
