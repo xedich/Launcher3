@@ -9,6 +9,7 @@ import android.content.pm.LauncherActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Process;
 import android.os.UserHandle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -16,7 +17,6 @@ import android.util.Log;
 import com.android.launcher3.util.PackageUserKey;
 import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.ipc.VPackageManager;
-import com.lody.virtual.os.VUserHandle;
 import com.lody.virtual.os.VUserInfo;
 import com.lody.virtual.os.VUserManager;
 import com.lody.virtual.remote.InstalledAppInfo;
@@ -163,18 +163,32 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
         }
 
         for (ResolveInfo resolveInfo: ris) {
-            ActivityInfo activityInfo = resolveInfo.activityInfo;
             try {
-                Constructor<LauncherActivityInfo> constructor = LauncherActivityInfo.class.getDeclaredConstructor(Context.class, ActivityInfo.class, UserHandle.class);
-                constructor.setAccessible(true);
-                int uid = VUserHandle.getUserId(vuid);
-                UserHandle userHandle = UserHandle.class.getDeclaredConstructor(int.class).newInstance(uid);
-                LauncherActivityInfo launcherActivityInfo = constructor.newInstance(context, activityInfo, userHandle);
-                result.add(launcherActivityInfo);
+                // TODO: 18/2/9 multiuser
+                result.add(makeLauncherActivityInfo(context, resolveInfo, Process.myUserHandle()));
             } catch (Throwable e) {
                 e.printStackTrace();
             }
         }
         return result;
+    }
+
+    private static LauncherActivityInfo makeLauncherActivityInfo(Context context, ResolveInfo resolveInfo, UserHandle userHandle) {
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                Constructor<LauncherActivityInfo> constructor = LauncherActivityInfo.class.getDeclaredConstructor(Context.class,
+                        ResolveInfo.class, UserHandle.class, long.class);
+                constructor.setAccessible(true);
+                return constructor.newInstance(context, resolveInfo, userHandle, System.currentTimeMillis());
+            } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                Constructor<LauncherActivityInfo> constructor = LauncherActivityInfo.class.getDeclaredConstructor(Context.class, ActivityInfo.class, UserHandle.class);
+                constructor.setAccessible(true);
+                return constructor.newInstance(context, resolveInfo.activityInfo, userHandle);
+            } else {
+                throw new RuntimeException("can not construct launcher activity info");
+            }
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 }
