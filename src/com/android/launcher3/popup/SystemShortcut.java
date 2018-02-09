@@ -117,7 +117,7 @@ public abstract class SystemShortcut extends ItemInfo {
 
                     AlertDialog alertDialog = new AlertDialog.Builder(launcher)
                             .setTitle(R.string.home_menu_kill_title)
-                            .setMessage(launcher.getResources().getString(R.string.home_menu_kill_content, packageName))
+                            .setMessage(launcher.getResources().getString(R.string.home_menu_kill_content, itemInfo.title))
                                     .setPositiveButton(android.R.string.yes, (dialog, which) -> {
                                         // TODO: 18/2/9 multiuser
                                         VirtualCore.get().clearPackageAsUser(0, packageName);
@@ -152,7 +152,7 @@ public abstract class SystemShortcut extends ItemInfo {
 
                     AlertDialog alertDialog = new AlertDialog.Builder(launcher)
                             .setTitle(R.string.home_menu_clear_title)
-                            .setMessage(launcher.getString(R.string.home_menu_clear_content, packageName))
+                            .setMessage(launcher.getString(R.string.home_menu_clear_content, itemInfo.title))
                                     .setPositiveButton(android.R.string.yes, (dialog, which) -> {
                                         // TODO: 18/2/9 multi user
                                         VirtualCore.get().clearPackageAsUser(0, packageName);
