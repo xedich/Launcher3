@@ -8,6 +8,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.UserHandle;
@@ -175,15 +176,15 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
 
     private static LauncherActivityInfo makeLauncherActivityInfo(Context context, ResolveInfo resolveInfo, UserHandle userHandle) {
         try {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                Constructor<LauncherActivityInfo> constructor = LauncherActivityInfo.class.getDeclaredConstructor(Context.class, ActivityInfo.class, UserHandle.class);
+                constructor.setAccessible(true);
+                return constructor.newInstance(context, resolveInfo.activityInfo, userHandle);
+            } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 Constructor<LauncherActivityInfo> constructor = LauncherActivityInfo.class.getDeclaredConstructor(Context.class,
                         ResolveInfo.class, UserHandle.class, long.class);
                 constructor.setAccessible(true);
                 return constructor.newInstance(context, resolveInfo, userHandle, System.currentTimeMillis());
-            } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                Constructor<LauncherActivityInfo> constructor = LauncherActivityInfo.class.getDeclaredConstructor(Context.class, ActivityInfo.class, UserHandle.class);
-                constructor.setAccessible(true);
-                return constructor.newInstance(context, resolveInfo.activityInfo, userHandle);
             } else {
                 throw new RuntimeException("can not construct launcher activity info");
             }
