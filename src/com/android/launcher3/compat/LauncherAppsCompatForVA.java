@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -35,6 +36,8 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
     private static final String TAG = "LauncherAppsCompatForVA";
 
     private final VirtualCore mVirtualCore;
+
+    private VirtualCore.PackageObserver mPackageObserver;
 
     LauncherAppsCompatForVA() {
         mVirtualCore = VirtualCore.get();
@@ -107,12 +110,36 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
 
     @Override
     public void addOnAppsChangedCallback(OnAppsChangedCallbackCompat listener) {
-        // TODO: 18/2/9
+        // TODO: 18/2/9 multiuser
+        mPackageObserver = new VirtualCore.PackageObserver() {
+            @Override
+            public void onPackageInstalled(String packageName) throws RemoteException {
+                listener.onPackageAdded(packageName, Process.myUserHandle());
+            }
+
+            @Override
+            public void onPackageUninstalled(String packageName) throws RemoteException {
+                listener.onPackageRemoved(packageName, Process.myUserHandle());
+            }
+
+            @Override
+            public void onPackageInstalledAsUser(int userId, String packageName) throws RemoteException {
+                listener.onPackageAdded(packageName, Process.myUserHandle());
+            }
+
+            @Override
+            public void onPackageUninstalledAsUser(int userId, String packageName) throws RemoteException {
+                listener.onPackageRemoved(packageName, Process.myUserHandle());
+            }
+        };
+        mVirtualCore.registerObserver(mPackageObserver);
     }
 
     @Override
     public void removeOnAppsChangedCallback(OnAppsChangedCallbackCompat listener) {
-        // TODO: 18/2/9
+        if (mPackageObserver != null) {
+            mVirtualCore.unregisterObserver(mPackageObserver);
+        }
     }
 
     @Override
