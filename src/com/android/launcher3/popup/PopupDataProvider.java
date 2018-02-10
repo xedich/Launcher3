@@ -54,7 +54,8 @@ public class PopupDataProvider implements NotificationListener.NotificationsChan
             new SystemShortcut.AppInfo(),
             new SystemShortcut.Widgets(),
             new SystemShortcut.ClearApp(),
-            new SystemShortcut.KillApp()
+            new SystemShortcut.KillApp(),
+            new SystemShortcut.CreateDesktopShortcut()
     };
 
     private final Launcher mLauncher;

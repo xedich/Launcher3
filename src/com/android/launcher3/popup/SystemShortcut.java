@@ -2,16 +2,19 @@ package com.android.launcher3.popup;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import com.android.launcher3.AbstractFloatingView;
 import com.android.launcher3.InfoDropTarget;
 import com.android.launcher3.ItemInfo;
 import com.android.launcher3.Launcher;
 import com.android.launcher3.R;
+import com.android.launcher3.Utilities;
 import com.android.launcher3.model.WidgetItem;
 import com.android.launcher3.util.PackageUserKey;
 import com.android.launcher3.widget.WidgetsBottomSheet;
@@ -25,7 +28,7 @@ import static com.android.launcher3.userevent.nano.LauncherLogProto.ControlType;
 /**
  * Represents a system shortcut for a given app. The shortcut should have a static label and
  * icon, and an onClickListener that depends on the item that the shortcut services.
- *
+ * <p>
  * Example system shortcuts, defined as inner classes, include Widgets and AppInfo.
  */
 public abstract class SystemShortcut extends ItemInfo {
@@ -46,7 +49,7 @@ public abstract class SystemShortcut extends ItemInfo {
     }
 
     public abstract View.OnClickListener getOnClickListener(final Launcher launcher,
-            final ItemInfo itemInfo);
+                                                            final ItemInfo itemInfo);
 
     public static class Widgets extends SystemShortcut {
 
@@ -56,7 +59,7 @@ public abstract class SystemShortcut extends ItemInfo {
 
         @Override
         public View.OnClickListener getOnClickListener(final Launcher launcher,
-                final ItemInfo itemInfo) {
+                                                       final ItemInfo itemInfo) {
             final List<WidgetItem> widgets = launcher.getWidgetsForPackageUser(new PackageUserKey(
                     itemInfo.getTargetComponent().getPackageName(), itemInfo.user));
             if (widgets == null) {
@@ -84,7 +87,7 @@ public abstract class SystemShortcut extends ItemInfo {
 
         @Override
         public View.OnClickListener getOnClickListener(final Launcher launcher,
-                final ItemInfo itemInfo) {
+                                                       final ItemInfo itemInfo) {
             return new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -118,10 +121,10 @@ public abstract class SystemShortcut extends ItemInfo {
                     AlertDialog alertDialog = new AlertDialog.Builder(launcher)
                             .setTitle(R.string.home_menu_kill_title)
                             .setMessage(launcher.getResources().getString(R.string.home_menu_kill_content, itemInfo.title))
-                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                                        // TODO: 18/2/9 multiuser
-                                        VirtualCore.get().killApp(packageName, 0);
-                                    })
+                            .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                                // TODO: 18/2/9 multiuser
+                                VirtualCore.get().killApp(packageName, 0);
+                            })
                             .setNegativeButton(android.R.string.no, null)
                             .create();
                     try {
@@ -153,16 +156,56 @@ public abstract class SystemShortcut extends ItemInfo {
                     AlertDialog alertDialog = new AlertDialog.Builder(launcher)
                             .setTitle(R.string.home_menu_clear_title)
                             .setMessage(launcher.getString(R.string.home_menu_clear_content, itemInfo.title))
-                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                                        // TODO: 18/2/9 multi user
-                                        VirtualCore.get().clearPackageAsUser(0, packageName);
-                                    })
+                            .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                                // TODO: 18/2/9 multi user
+                                VirtualCore.get().clearPackageAsUser(0, packageName);
+                            })
                             .setNegativeButton(android.R.string.no, null)
                             .create();
                     try {
                         alertDialog.show();
                     } catch (Throwable ignored) {
                         // BadTokenException.
+                    }
+                }
+            };
+        }
+    }
+
+    public static class CreateDesktopShortcut extends SystemShortcut {
+
+        public CreateDesktopShortcut() {
+            super(R.drawable.ic_create_shortcut, R.string.create_shortcut_label);
+        }
+
+        @Override
+        public View.OnClickListener getOnClickListener(Launcher launcher, ItemInfo itemInfo) {
+            final String packageName = itemInfo.getTargetComponent().getPackageName();
+
+            return v -> {
+                AbstractFloatingView topView = AbstractFloatingView.getTopOpenView(launcher);
+                if (!(topView instanceof PopupContainerWithArrow)) {
+                    return;
+                }
+                // first close the menu
+                topView.close(true);
+
+                VirtualCore.OnEmitShortcutListener listener = new VirtualCore.OnEmitShortcutListener() {
+                    @Override
+                    public Bitmap getIcon(Bitmap originIcon) {
+                        return originIcon;
+                    }
+
+                    @Override
+                    public String getName(String originName) {
+                        return originName + "(VAE)";
+                    }
+                };
+
+                if (VirtualCore.get().createShortcut(0, packageName, listener)) {
+                    if (!Utilities.ATLEAST_OREO) {
+                        Toast.makeText(VirtualCore.get().getContext(),
+                                R.string.create_shortcut_success, Toast.LENGTH_SHORT).show();
                     }
                 }
             };
