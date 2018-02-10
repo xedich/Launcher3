@@ -1,22 +1,20 @@
 package com.android.launcher3;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.android.launcher3.compat.LauncherAppsCompat;
-
-import java.net.URISyntaxException;
+import com.lody.virtual.client.core.VirtualCore;
 
 public class UninstallDropTarget extends ButtonDropTarget {
 
@@ -121,14 +119,21 @@ public class UninstallDropTarget extends ButtonDropTarget {
             Toast.makeText(launcher, R.string.uninstall_system_app_text, Toast.LENGTH_SHORT).show();
             canUninstall = false;
         } else {
+            final String packageName = cn.getPackageName();
+            AlertDialog alertDialog = new AlertDialog.Builder(launcher)
+                    .setTitle(R.string.home_menu_delete_title)
+                    .setMessage(launcher.getResources().getString(R.string.home_menu_delete_content, info.title))
+                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                        // TODO: 18/2/9 multiuser
+                        VirtualCore.get().uninstallPackageAsUser(packageName, 0);
+                    })
+                    .setNegativeButton(android.R.string.no, null)
+                    .create();
             try {
-                Intent i = Intent.parseUri(launcher.getString(R.string.delete_package_intent), 0)
-                        .setData(Uri.fromParts("package", cn.getPackageName(), cn.getClassName()))
-                        .putExtra(Intent.EXTRA_USER, info.user);
-                launcher.startActivity(i);
+                alertDialog.show();
                 canUninstall = true;
-            } catch (URISyntaxException e) {
-                Log.e(TAG, "Failed to parse intent to start uninstall activity for item=" + info);
+            } catch (Throwable ignored) {
+                // BadTokenException.
                 canUninstall = false;
             }
         }

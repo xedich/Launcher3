@@ -99,6 +99,8 @@
     <string name="home_menu_clear_content" >Do you want to clear data of %1$s ?</string>
     <string name="home_menu_kill_title">Force Stop</string>
     <string name="home_menu_kill_content">Do you want to force stop %1$s, this may cause it works Unexpectedly.</string>
+    <string name="home_menu_delete_title">Delete App</string>
+    <string name="home_menu_delete_content">Do you want to delete %1$s ?</string>
 
     <!-- Permissions: -->
     <skip />

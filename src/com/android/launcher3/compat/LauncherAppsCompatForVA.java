@@ -79,10 +79,8 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
             return null;
         }
 
-        ActivityInfo activityInfo = ris.get(0).activityInfo;
         try {
-            Constructor<LauncherActivityInfo> constructor = LauncherActivityInfo.class.getConstructor(Context.class, ActivityInfo.class, UserHandle.class);
-            return constructor.newInstance(context, activityInfo, user);
+            return makeLauncherActivityInfo(context, ris.get(0), Process.myUserHandle());
         } catch (Throwable e) {
             Log.e(TAG, "create launcherActivityInfo failed", e);
             return null;
