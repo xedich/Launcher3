@@ -19,7 +19,6 @@ import android.util.Log;
 import com.android.launcher3.util.PackageUserKey;
 import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.ipc.VPackageManager;
-import com.lody.virtual.os.VUserHandle;
 import com.lody.virtual.os.VUserInfo;
 import com.lody.virtual.os.VUserManager;
 import com.lody.virtual.remote.InstalledAppInfo;
@@ -113,14 +112,12 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
         mPackageObserver = new VirtualCore.PackageObserver() {
             @Override
             public void onPackageInstalled(String packageName) throws RemoteException {
-                int allUserVid = VUserHandle.ALL.getIdentifier();
-                listener.onPackageAdded(packageName, mirror.android.os.UserHandle.of.call(allUserVid));
+                listener.onPackageAdded(packageName, mirror.android.os.UserHandle.of.call(0));
             }
 
             @Override
             public void onPackageUninstalled(String packageName) throws RemoteException {
-                int allUserVid = VUserHandle.ALL.getIdentifier();
-                listener.onPackageRemoved(packageName, mirror.android.os.UserHandle.of.call(allUserVid));
+                listener.onPackageRemoved(packageName, mirror.android.os.UserHandle.of.call(0));
             }
 
             @Override

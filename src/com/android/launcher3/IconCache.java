@@ -373,12 +373,20 @@ public class IconCache {
         }
         entry.title = app.getLabel();
         entry.contentDescription = mUserManager.getBadgedLabelForUser(entry.title, app.getUser());
+        uniformTitleAndIcon(entry, app.getUser());
         mCache.put(key, entry);
 
         Bitmap lowResIcon = generateLowResIcon(entry.icon);
         ContentValues values = newContentValues(entry.icon, lowResIcon, entry.title.toString(),
                 app.getApplicationInfo().packageName);
         addIconToDB(values, app.getComponentName(), info, userSerial);
+    }
+
+    private void uniformTitleAndIcon(CacheEntry entry, UserHandle userHandle) {
+        int user = mirror.android.os.UserHandle.getIdentifier.call(userHandle);
+        if (user > 0) {
+            entry.title = String.format(Locale.getDefault(), "[%d]%s", user+ 1, entry.title);
+        }
     }
 
     /**
@@ -557,10 +565,6 @@ public class IconCache {
                     entry.title = info.getLabel();
                     entry.contentDescription = mUserManager.getBadgedLabelForUser(entry.title, user);
                 }
-            }
-            int userId = mirror.android.os.UserHandle.getIdentifier.call(user);
-            if (userId != 0) {
-                entry.title = String.format(Locale.getDefault(), "[%d]%s", userId + 1, entry.title);
             }
         }
         return entry;
