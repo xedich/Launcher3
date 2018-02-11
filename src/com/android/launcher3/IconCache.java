@@ -383,7 +383,7 @@ public class IconCache {
     }
 
     private void uniformTitleAndIcon(CacheEntry entry, UserHandle userHandle) {
-        int user = mirror.android.os.UserHandle.getIdentifier.call(userHandle);
+        int user = UserManagerCompat.toUserId(userHandle);
         if (user > 0) {
             entry.title = String.format(Locale.getDefault(), "[%d]%s", user+ 1, entry.title);
         }

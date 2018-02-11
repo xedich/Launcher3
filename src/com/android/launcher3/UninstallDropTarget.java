@@ -14,6 +14,7 @@ import android.util.AttributeSet;
 import android.widget.Toast;
 
 import com.android.launcher3.compat.LauncherAppsCompat;
+import com.android.launcher3.compat.UserManagerCompat;
 import com.lody.virtual.client.core.VirtualCore;
 
 public class UninstallDropTarget extends ButtonDropTarget {
@@ -126,7 +127,7 @@ public class UninstallDropTarget extends ButtonDropTarget {
                     .setPositiveButton(android.R.string.yes, (dialog, which) -> {
                         // TODO: 18/2/9 multiuser
                         UserHandle user = info.user;
-                        int userId = mirror.android.os.UserHandle.getIdentifier.call(user);
+                        int userId = UserManagerCompat.toUserId(user);
                         VirtualCore.get().uninstallPackageAsUser(packageName, userId);
                     })
                     .setNegativeButton(android.R.string.no, null)

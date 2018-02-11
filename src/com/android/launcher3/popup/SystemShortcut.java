@@ -16,6 +16,7 @@ import com.android.launcher3.ItemInfo;
 import com.android.launcher3.Launcher;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
+import com.android.launcher3.compat.UserManagerCompat;
 import com.android.launcher3.model.WidgetItem;
 import com.android.launcher3.util.PackageUserKey;
 import com.android.launcher3.widget.WidgetsBottomSheet;
@@ -123,9 +124,8 @@ public abstract class SystemShortcut extends ItemInfo {
                             .setTitle(R.string.home_menu_kill_title)
                             .setMessage(launcher.getResources().getString(R.string.home_menu_kill_content, itemInfo.title))
                             .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                                // TODO: 18/2/9 multiuser
                                 UserHandle user = itemInfo.user;
-                                int userId = mirror.android.os.UserHandle.getIdentifier.call(user);
+                                int userId = UserManagerCompat.toUserId(user);
                                 VirtualCore.get().killApp(packageName, userId);
                             })
                             .setNegativeButton(android.R.string.no, null)

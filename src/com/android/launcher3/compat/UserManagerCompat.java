@@ -50,7 +50,7 @@ public abstract class UserManagerCompat {
     }
 
     public Drawable getUserBadgedIcon(Drawable icon, UserHandle user) {
-        int vuserId = mirror.android.os.UserHandle.getIdentifier.call(user);
+        int vuserId = UserManagerCompat.toUserId(user);
         if (vuserId == 0) {
             return generatorNumIcon(icon, true, "1");
         } else {
@@ -72,6 +72,14 @@ public abstract class UserManagerCompat {
     public abstract boolean isUserUnlocked(UserHandle user);
 
     public abstract boolean isDemoUser();
+
+    public static UserHandle fromUserId(int userId) {
+        return mirror.android.os.UserHandle.ctor.newInstance(userId);
+    }
+
+    public static int toUserId(UserHandle user) {
+        return mirror.android.os.UserHandle.getIdentifier.call(user);
+    }
 
     /***
      *

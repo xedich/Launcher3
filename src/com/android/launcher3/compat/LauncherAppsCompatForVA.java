@@ -45,7 +45,7 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
 
     @Override
     public List<LauncherActivityInfo> getActivityList(String packageName, UserHandle user) {
-        int vuserId = mirror.android.os.UserHandle.getIdentifier.call(user);
+        int vuserId = UserManagerCompat.toUserId(user);
         if (packageName == null) {
             List<LauncherActivityInfo> result = new ArrayList<>();
             List<InstalledAppInfo> installedApps = mVirtualCore.getInstalledAppsAsUser(vuserId, 0);
@@ -63,7 +63,7 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
     @Override
     public LauncherActivityInfo resolveActivity(Intent intent, UserHandle user) {
         Context context = mVirtualCore.getContext();
-        int vuserId = mirror.android.os.UserHandle.getIdentifier.call(user);
+        int vuserId = UserManagerCompat.toUserId(user);
 
         VPackageManager pm = VPackageManager.get();
         List<ResolveInfo> ris = pm.queryIntentActivities(intent, intent.resolveType(context), 0, vuserId);
@@ -112,23 +112,23 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
         mPackageObserver = new VirtualCore.PackageObserver() {
             @Override
             public void onPackageInstalled(String packageName) throws RemoteException {
-                listener.onPackageAdded(packageName, mirror.android.os.UserHandle.of.call(0));
+                listener.onPackageAdded(packageName, UserManagerCompat.fromUserId(0));
             }
 
             @Override
             public void onPackageUninstalled(String packageName) throws RemoteException {
-                listener.onPackageRemoved(packageName, mirror.android.os.UserHandle.of.call(0));
+                listener.onPackageRemoved(packageName, UserManagerCompat.fromUserId(0));
             }
 
             @Override
             public void onPackageInstalledAsUser(int userId, String packageName) throws RemoteException {
-                UserHandle userHandle = mirror.android.os.UserHandle.of.call(userId);
+                UserHandle userHandle = UserManagerCompat.fromUserId(userId);
                 listener.onPackageAdded(packageName, userHandle);
             }
 
             @Override
             public void onPackageUninstalledAsUser(int userId, String packageName) throws RemoteException {
-                UserHandle userHandle = mirror.android.os.UserHandle.of.call(userId);
+                UserHandle userHandle = UserManagerCompat.fromUserId(userId);
                 listener.onPackageRemoved(packageName, userHandle);
             }
         };
@@ -191,7 +191,7 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
 
         for (ResolveInfo resolveInfo: ris) {
             try {
-                UserHandle userHandle = mirror.android.os.UserHandle.of.call(vuid);
+                UserHandle userHandle = UserManagerCompat.fromUserId(vuid);
                 result.add(makeLauncherActivityInfo(context, resolveInfo, userHandle));
             } catch (Throwable e) {
                 e.printStackTrace();

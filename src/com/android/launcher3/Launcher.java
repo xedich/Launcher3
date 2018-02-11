@@ -2705,7 +2705,7 @@ public class Launcher extends BaseActivity
                 // Shortcuts need some special checks due to legacy reasons.
                 startShortcutIntentSafely(intent, optsBundle, item);
             } else {
-                int userId = mirror.android.os.UserHandle.getIdentifier.call(user);
+                int userId = UserManagerCompat.toUserId(user);
                 startVirtualActivity(intent, optsBundle, userId);
             }
             return true;
