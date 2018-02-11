@@ -41,6 +41,7 @@ import android.os.UserHandle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
+
 import com.android.launcher3.compat.LauncherAppsCompat;
 import com.android.launcher3.compat.UserManagerCompat;
 import com.android.launcher3.config.FeatureFlags;
@@ -52,10 +53,12 @@ import com.android.launcher3.util.Preconditions;
 import com.android.launcher3.util.Provider;
 import com.android.launcher3.util.SQLiteCacheHelper;
 import com.android.launcher3.util.Thunk;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.Stack;
 
@@ -554,6 +557,10 @@ public class IconCache {
                     entry.title = info.getLabel();
                     entry.contentDescription = mUserManager.getBadgedLabelForUser(entry.title, user);
                 }
+            }
+            int userId = mirror.android.os.UserHandle.getIdentifier.call(user);
+            if (userId != 0) {
+                entry.title = String.format(Locale.getDefault(), "[%d]%s", userId + 1, entry.title);
             }
         }
         return entry;

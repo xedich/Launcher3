@@ -89,7 +89,6 @@ import com.android.launcher3.allapps.AllAppsContainerView;
 import com.android.launcher3.allapps.AllAppsTransitionController;
 import com.android.launcher3.anim.AnimationLayerSet;
 import com.android.launcher3.compat.AppWidgetManagerCompat;
-import com.android.launcher3.compat.LauncherAppsCompat;
 import com.android.launcher3.compat.LauncherAppsCompatVO;
 import com.android.launcher3.compat.UserManagerCompat;
 import com.android.launcher3.config.FeatureFlags;
@@ -2705,13 +2704,9 @@ public class Launcher extends BaseActivity
                     && !((ShortcutInfo) item).isPromise()) {
                 // Shortcuts need some special checks due to legacy reasons.
                 startShortcutIntentSafely(intent, optsBundle, item);
-            } else if (user == null || user.equals(Process.myUserHandle())) {
-                // Could be launching some bookkeeping activity
-                // TODO: 18/2/9 multiuser
-                startVirtualActivity(intent, optsBundle, 0);
             } else {
-                LauncherAppsCompat.getInstance(this).startActivityForProfile(
-                        intent.getComponent(), user, intent.getSourceBounds(), optsBundle);
+                int userId = mirror.android.os.UserHandle.getIdentifier.call(user);
+                startVirtualActivity(intent, optsBundle, userId);
             }
             return true;
         } catch (ActivityNotFoundException|SecurityException e) {

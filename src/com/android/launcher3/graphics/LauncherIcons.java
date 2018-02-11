@@ -43,6 +43,7 @@ import com.android.launcher3.IconCache;
 import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
+import com.android.launcher3.compat.UserManagerCompat;
 import com.android.launcher3.config.FeatureFlags;
 import com.android.launcher3.model.PackageItemInfo;
 import com.android.launcher3.shortcuts.DeepShortcutManager;
@@ -134,10 +135,11 @@ public class LauncherIcons {
      * Badges the provided icon with the user badge if required.
      */
     public static Bitmap badgeIconForUser(Bitmap icon, UserHandle user, Context context) {
-        if (user != null && !Process.myUserHandle().equals(user)) {
+        if (user != null) {
             BitmapDrawable drawable = new FixedSizeBitmapDrawable(icon);
-            Drawable badged = context.getPackageManager().getUserBadgedIcon(
-                    drawable, user);
+            //Drawable badged = context.getPackageManager().getUserBadgedIcon(
+            //        drawable, user);
+            Drawable badged = UserManagerCompat.getInstance(context).getUserBadgedIcon(drawable, user);
             if (badged instanceof BitmapDrawable) {
                 return ((BitmapDrawable) badged).getBitmap();
             } else {

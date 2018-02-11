@@ -39,6 +39,7 @@ import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 import android.support.animation.FloatPropertyCompat;
 import android.support.animation.SpringAnimation;
 import android.support.animation.SpringForce;
@@ -56,6 +57,7 @@ import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.compat.LauncherAppsCompat;
 import com.android.launcher3.compat.ShortcutConfigActivityInfo;
+import com.android.launcher3.compat.UserManagerCompat;
 import com.android.launcher3.config.FeatureFlags;
 import com.android.launcher3.graphics.IconNormalizer;
 import com.android.launcher3.graphics.LauncherIcons;
@@ -376,8 +378,9 @@ public class DragView extends View {
         } else if (info.itemType == LauncherSettings.Favorites.ITEM_TYPE_FOLDER) {
             return ((FolderAdaptiveIcon) obj).getBadge();
         } else {
-            return mLauncher.getPackageManager()
-                    .getUserBadgedIcon(new FixedSizeEmptyDrawable(iconSize), info.user);
+            // return mLauncher.getPackageManager()
+            //        .getUserBadgedIcon(new FixedSizeEmptyDrawable(iconSize), Process.myUserHandle());
+            return UserManagerCompat.getInstance(appState.getContext()).getUserBadgedIcon(new FixedSizeEmptyDrawable(iconSize), info.user);
         }
     }
 

@@ -19,6 +19,7 @@ import android.util.Log;
 import com.android.launcher3.util.PackageUserKey;
 import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.ipc.VPackageManager;
+import com.lody.virtual.os.VUserHandle;
 import com.lody.virtual.os.VUserInfo;
 import com.lody.virtual.os.VUserManager;
 import com.lody.virtual.remote.InstalledAppInfo;
@@ -45,9 +46,10 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
 
     @Override
     public List<LauncherActivityInfo> getActivityList(String packageName, UserHandle user) {
+        int vuserId = mirror.android.os.UserHandle.getIdentifier.call(user);
         if (packageName == null) {
             List<LauncherActivityInfo> result = new ArrayList<>();
-            List<InstalledAppInfo> installedApps = mVirtualCore.getInstalledApps(0);
+            List<InstalledAppInfo> installedApps = mVirtualCore.getInstalledAppsAsUser(vuserId, 0);
             for (InstalledAppInfo installedApp : installedApps) {
                 List<LauncherActivityInfo> activityListForPackage = getActivityListForPackage(installedApp.packageName);
                 assert activityListForPackage != null;
@@ -62,10 +64,10 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
     @Override
     public LauncherActivityInfo resolveActivity(Intent intent, UserHandle user) {
         Context context = mVirtualCore.getContext();
-        int userId = 0;
+        int vuserId = mirror.android.os.UserHandle.getIdentifier.call(user);
 
         VPackageManager pm = VPackageManager.get();
-        List<ResolveInfo> ris = pm.queryIntentActivities(intent, intent.resolveType(context), 0, userId);
+        List<ResolveInfo> ris = pm.queryIntentActivities(intent, intent.resolveType(context), 0, vuserId);
 
         // Otherwise, try to find a main launcher activity.
         if (ris == null || ris.size() <= 0) {
@@ -73,7 +75,7 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
             intent.removeCategory(Intent.CATEGORY_INFO);
             intent.addCategory(Intent.CATEGORY_LAUNCHER);
             intent.setPackage(intent.getPackage());
-            ris = pm.queryIntentActivities(intent, intent.resolveType(context), 0, userId);
+            ris = pm.queryIntentActivities(intent, intent.resolveType(context), 0, vuserId);
         }
         if (ris == null || ris.size() <= 0) {
             return null;
@@ -108,26 +110,29 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
 
     @Override
     public void addOnAppsChangedCallback(OnAppsChangedCallbackCompat listener) {
-        // TODO: 18/2/9 multiuser
         mPackageObserver = new VirtualCore.PackageObserver() {
             @Override
             public void onPackageInstalled(String packageName) throws RemoteException {
-                listener.onPackageAdded(packageName, Process.myUserHandle());
+                int allUserVid = VUserHandle.ALL.getIdentifier();
+                listener.onPackageAdded(packageName, mirror.android.os.UserHandle.of.call(allUserVid));
             }
 
             @Override
             public void onPackageUninstalled(String packageName) throws RemoteException {
-                listener.onPackageRemoved(packageName, Process.myUserHandle());
+                int allUserVid = VUserHandle.ALL.getIdentifier();
+                listener.onPackageRemoved(packageName, mirror.android.os.UserHandle.of.call(allUserVid));
             }
 
             @Override
             public void onPackageInstalledAsUser(int userId, String packageName) throws RemoteException {
-                listener.onPackageAdded(packageName, Process.myUserHandle());
+                UserHandle userHandle = mirror.android.os.UserHandle.of.call(userId);
+                listener.onPackageAdded(packageName, userHandle);
             }
 
             @Override
             public void onPackageUninstalledAsUser(int userId, String packageName) throws RemoteException {
-                listener.onPackageRemoved(packageName, Process.myUserHandle());
+                UserHandle userHandle = mirror.android.os.UserHandle.of.call(userId);
+                listener.onPackageRemoved(packageName, userHandle);
             }
         };
         mVirtualCore.registerObserver(mPackageObserver);
@@ -158,7 +163,6 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
     }
 
     private List<LauncherActivityInfo> getActivityListForPackage(String packageName) {
-        // return mLauncherApps.getActivityList(packageName, user);
         List<LauncherActivityInfo> result = new ArrayList<>();
         for (VUserInfo vUserInfo : VUserManager.get().getUsers()) {
             result.addAll(getActivityListForPackageAsUser(packageName, vUserInfo.id));
@@ -190,8 +194,8 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
 
         for (ResolveInfo resolveInfo: ris) {
             try {
-                // TODO: 18/2/9 multiuser
-                result.add(makeLauncherActivityInfo(context, resolveInfo, Process.myUserHandle()));
+                UserHandle userHandle = mirror.android.os.UserHandle.of.call(vuid);
+                result.add(makeLauncherActivityInfo(context, resolveInfo, userHandle));
             } catch (Throwable e) {
                 e.printStackTrace();
             }

@@ -125,7 +125,9 @@ public class UninstallDropTarget extends ButtonDropTarget {
                     .setMessage(launcher.getResources().getString(R.string.home_menu_delete_content, info.title))
                     .setPositiveButton(android.R.string.yes, (dialog, which) -> {
                         // TODO: 18/2/9 multiuser
-                        VirtualCore.get().uninstallPackageAsUser(packageName, 0);
+                        UserHandle user = info.user;
+                        int userId = mirror.android.os.UserHandle.getIdentifier.call(user);
+                        VirtualCore.get().uninstallPackageAsUser(packageName, userId);
                     })
                     .setNegativeButton(android.R.string.no, null)
                     .create();
