@@ -370,9 +370,11 @@ public class Launcher extends BaseActivity
             mLauncherCallbacks.preOnCreate();
         }
 
+        /*
         WallpaperColorInfo wallpaperColorInfo = WallpaperColorInfo.getInstance(this);
         wallpaperColorInfo.setOnThemeChangeListener(this);
         overrideTheme(wallpaperColorInfo.isDark(), wallpaperColorInfo.supportsDarkText());
+        */
 
         super.onCreate(savedInstanceState);
 
