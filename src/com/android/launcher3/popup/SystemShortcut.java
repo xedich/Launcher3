@@ -160,8 +160,9 @@ public abstract class SystemShortcut extends ItemInfo {
                             .setTitle(R.string.home_menu_clear_title)
                             .setMessage(launcher.getString(R.string.home_menu_clear_content, itemInfo.title))
                             .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                                // TODO: 18/2/9 multi user
-                                VirtualCore.get().clearPackageAsUser(0, packageName);
+                                UserHandle user = itemInfo.user;
+                                int userId = UserManagerCompat.toUserId(user);
+                                VirtualCore.get().clearPackageAsUser(userId, packageName);
                             })
                             .setNegativeButton(android.R.string.no, null)
                             .create();
