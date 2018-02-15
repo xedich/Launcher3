@@ -166,7 +166,7 @@
 
     <!-- Strings for the customization mode -->
     <!-- Text for widget add button -->
-    <string name="widget_button_text">Add</string>
+    <string name="widget_button_text">Desktop Widgets</string>
     <!-- Text for wallpaper change button -->
     <string name="wallpaper_button_text">Wallpapers</string>
     <!-- Text for settings button -->
@@ -349,4 +349,5 @@
     <string name="title_disable_suggestions_prompt">Turn off app suggestions?</string>
     <string name="msg_disable_suggestions_prompt">"Suggestions won't appear at the top of your apps list, and the usage data used to create them will be permanently erased."</string>
     <string name="label_turn_off_suggestions">TURN OFF</string>
+    <string name="the_coming_feature">The coming</string>
 </resources>

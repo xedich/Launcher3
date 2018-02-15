@@ -15,7 +15,9 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.android.launcher3.R;
 import com.android.launcher3.util.PackageUserKey;
 import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.ipc.VPackageManager;
@@ -105,6 +107,7 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
     @Override
     public void showAppDetailsForProfile(ComponentName component, UserHandle user, Rect sourceBounds, Bundle opts) {
         // TODO: 18/2/9
+        Toast.makeText(mVirtualCore.getContext(), R.string.the_coming_feature, Toast.LENGTH_SHORT).show();
     }
 
     @Override
