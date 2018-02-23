@@ -28,6 +28,7 @@ import com.lody.virtual.remote.InstalledAppInfo;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -180,16 +181,41 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
         intentToResolve.setPackage(packageName);
         List<ResolveInfo> ris = pm.queryIntentActivities(intentToResolve, intentToResolve.resolveType(context), 0, vuid);
 
-        // Otherwise, try to find a main launcher activity.
+        // Otherwise, try to find a default launcher activity.
         if (ris == null || ris.size() <= 0) {
             // reuse the intent instance
             intentToResolve.removeCategory(Intent.CATEGORY_INFO);
+            intentToResolve.addCategory(Intent.CATEGORY_DEFAULT);
+            intentToResolve.setPackage(packageName);
+            ris = pm.queryIntentActivities(intentToResolve, intentToResolve.resolveType(context), 0, vuid);
+        }
+
+        // Otherwise, try to find a main launcher activity
+        if (ris == null || ris.size() <= 0) {
+            intentToResolve.removeCategory(Intent.CATEGORY_DEFAULT);
             intentToResolve.addCategory(Intent.CATEGORY_LAUNCHER);
             intentToResolve.setPackage(packageName);
             ris = pm.queryIntentActivities(intentToResolve, intentToResolve.resolveType(context), 0, vuid);
         }
-        if (ris == null || ris.size() <= 0) {
+
+        if (ris == null || ris.size() == 0) {
             return result;
+        }
+
+        // remove the alias-activity
+        ResolveInfo first = ris.get(0);
+        Iterator<ResolveInfo> iterator = ris.iterator();
+        while (iterator.hasNext()) {
+            ResolveInfo next = iterator.next();
+            if (next.activityInfo.targetActivity != null) {
+                // alias, remove it
+                iterator.remove();
+            }
+        }
+
+        // if it is all alias, keep one.
+        if (ris.size() == 0) {
+            ris.add(first);
         }
 
         for (ResolveInfo resolveInfo: ris) {
