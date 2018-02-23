@@ -29,18 +29,20 @@ public class SearchThread implements SearchAlgorithm, Handler.Callback {
     private void dj(SearchResult componentList) {
         Uri uri = new Uri.Builder()
                 .scheme("content")
-                .authority("com.google.android.apps.nexuslauncher.appssearch")
+                .authority(AppSearchProvider.AUTHORITY)
                 .appendPath(componentList.mQuery)
                 .build();
 
         Cursor cursor = null;
         try {
             cursor = mContext.getContentResolver().query(uri, null, null, null, null);
-            int suggestIntentData = cursor.getColumnIndex("suggest_intent_data");
-            while (cursor.moveToNext()) {
-                componentList.mApps.add(AppSearchProvider.dl(Uri.parse(cursor.getString(suggestIntentData)), mContext));
+            if (cursor != null) {
+                int suggestIntentData = cursor.getColumnIndex("suggest_intent_data");
+                while (cursor.moveToNext()) {
+                    componentList.mApps.add(AppSearchProvider.dl(Uri.parse(cursor.getString(suggestIntentData)), mContext));
+                }
             }
-        } finally {
+        }  finally {
             if (cursor != null) {
                 cursor.close();
             }
