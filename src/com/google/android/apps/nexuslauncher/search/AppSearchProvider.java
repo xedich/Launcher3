@@ -42,6 +42,7 @@ import java.util.concurrent.TimeoutException;
 
 public class AppSearchProvider extends ContentProvider
 {
+    public static String AUTHORITY = "io.va.exposed.appssearch";
     private static final String[] eK = new String[] { "_id", "suggest_text_1", "suggest_icon_1", "suggest_intent_action", "suggest_intent_data" };
     private final PipeDataWriter<Future> eL;
     private LooperExecutor eM;
@@ -73,7 +74,7 @@ public class AppSearchProvider extends ContentProvider
     }
 
     public static Uri dm(final AppInfo appInfo, final UserManagerCompat userManagerCompat) {
-        return new Uri.Builder().scheme("content").authority("com.google.android.apps.nexuslauncher.appssearch").appendQueryParameter("component", appInfo.componentName.flattenToShortString()).appendQueryParameter("user", Long.toString(userManagerCompat.getSerialNumberForUser(appInfo.user))).build();
+        return new Uri.Builder().scheme("content").authority(AUTHORITY).appendQueryParameter("component", appInfo.componentName.flattenToShortString()).appendQueryParameter("user", Long.toString(userManagerCompat.getSerialNumberForUser(appInfo.user))).build();
     }
 
     private Cursor dn(final List list) {
