@@ -181,18 +181,9 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
         intentToResolve.setPackage(packageName);
         List<ResolveInfo> ris = pm.queryIntentActivities(intentToResolve, intentToResolve.resolveType(context), 0, vuid);
 
-        // Otherwise, try to find a default launcher activity.
-        if (ris == null || ris.size() <= 0) {
-            // reuse the intent instance
-            intentToResolve.removeCategory(Intent.CATEGORY_INFO);
-            intentToResolve.addCategory(Intent.CATEGORY_DEFAULT);
-            intentToResolve.setPackage(packageName);
-            ris = pm.queryIntentActivities(intentToResolve, intentToResolve.resolveType(context), 0, vuid);
-        }
-
         // Otherwise, try to find a main launcher activity
         if (ris == null || ris.size() <= 0) {
-            intentToResolve.removeCategory(Intent.CATEGORY_DEFAULT);
+            intentToResolve.removeCategory(Intent.CATEGORY_INFO);
             intentToResolve.addCategory(Intent.CATEGORY_LAUNCHER);
             intentToResolve.setPackage(packageName);
             ris = pm.queryIntentActivities(intentToResolve, intentToResolve.resolveType(context), 0, vuid);
