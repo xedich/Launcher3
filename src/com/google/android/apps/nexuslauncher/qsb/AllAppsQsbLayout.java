@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.graphics.ColorUtils;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -150,9 +151,13 @@ public class AllAppsQsbLayout extends AbstractQsbLayout implements SearchUiManag
     public void onClick(final View view) {
         super.onClick(view);
         if (view == this) {
-            final ConfigBuilder f = new ConfigBuilder(this, true);
-            if (!mActivity.getGoogleNow().startSearch(f.build(), f.getExtras())) {
-                searchFallback();
+            try {
+                final ConfigBuilder f = new ConfigBuilder(this, true);
+                if (!mActivity.getGoogleNow().startSearch(f.build(), f.getExtras())) {
+                    searchFallback();
+                }
+            } catch (Throwable e) {
+                Log.e(AllAppsQsbLayout.class.getSimpleName(), "onClick exception:", e);
             }
         }
     }
