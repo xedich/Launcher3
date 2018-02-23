@@ -288,6 +288,9 @@ public class ConfigBuilder {
 
     private static a_search getViewBounds(final View view) {
         final a_search a = new a_search();
+        if (view == null) {
+            return a;
+        }
         a.eh = view.getWidth();
         a.ee = view.getHeight();
         final int[] array = new int[2];
