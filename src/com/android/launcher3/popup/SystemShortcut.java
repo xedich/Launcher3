@@ -194,6 +194,9 @@ public abstract class SystemShortcut extends ItemInfo {
                 // first close the menu
                 topView.close(true);
 
+                UserHandle user = itemInfo.user;
+                int userId = UserManagerCompat.toUserId(user);
+
                 VirtualCore.OnEmitShortcutListener listener = new VirtualCore.OnEmitShortcutListener() {
                     @Override
                     public Bitmap getIcon(Bitmap originIcon) {
@@ -202,11 +205,15 @@ public abstract class SystemShortcut extends ItemInfo {
 
                     @Override
                     public String getName(String originName) {
-                        return originName + "(VAE)";
+                        if (userId == 0) {
+                            return originName + "(VXP)";
+                        } else {
+                            return "[" + (userId + 1) + "]" + originName;
+                        }
                     }
                 };
 
-                if (VirtualCore.get().createShortcut(0, packageName, listener)) {
+                if (VirtualCore.get().createShortcut(userId, packageName, listener)) {
                     if (!Utilities.ATLEAST_OREO) {
                         Toast.makeText(VirtualCore.get().getContext(),
                                 R.string.create_shortcut_success, Toast.LENGTH_SHORT).show();
