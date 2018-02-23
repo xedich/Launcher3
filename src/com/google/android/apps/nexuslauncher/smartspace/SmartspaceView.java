@@ -161,13 +161,13 @@ public class SmartspaceView extends FrameLayout implements ISmartspace, ValueAni
 
     private void loadSingleLine(final SmartspaceDataContainer e) {
         setBackgroundResource(0);
-        mClockView.setOnClickListener(mCalendarClickListener);
-        mClockView.setOnLongClickListener(co());
+        // mClockView.setOnClickListener(mCalendarClickListener);
+        // mClockView.setOnLongClickListener(co());
         if (e.isWeatherAvailable()) {
             mTitleSeparator.setVisibility(View.VISIBLE);
             mTitleWeatherContent.setVisibility(View.VISIBLE);
-            mTitleWeatherContent.setOnClickListener(mWeatherClickListener);
-            mTitleWeatherContent.setOnLongClickListener(co());
+            // mTitleWeatherContent.setOnClickListener(mWeatherClickListener);
+            // mTitleWeatherContent.setOnLongClickListener(co());
             mTitleWeatherText.setText(e.dO.getTitle());
             mTitleWeatherIcon.setImageBitmap(e.dO.getIcon());
         } else {
