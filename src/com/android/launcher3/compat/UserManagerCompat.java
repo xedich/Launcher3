@@ -29,7 +29,6 @@ import android.graphics.drawable.Drawable;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import java.util.List;
 
@@ -93,15 +92,10 @@ public abstract class UserManagerCompat {
      */
     public static Drawable generatorNumIcon(Drawable icon, boolean isShowNum, String num) {
 
-        final String TAG = "mylog";
         DisplayMetrics dm = Resources.getSystem().getDisplayMetrics();
         //基准屏幕密度
         float baseDensity = 1.5f;//240dpi
         float factor = dm.density/baseDensity;
-
-        Log.e(TAG, "density:"+dm.density);
-        Log.e(TAG, "dpi:"+dm.densityDpi);
-        Log.e(TAG, "factor:"+factor);
 
         // 初始化画布
         int width = icon.getIntrinsicWidth();
@@ -127,7 +121,6 @@ public abstract class UserManagerCompat {
 
             if(!TextUtils.isDigitsOnly(num)){
                 //非数字
-                Log.e(TAG, "the num is not digit :"+ num);
                 num = "0";
             }
 
@@ -143,8 +136,6 @@ public abstract class UserManagerCompat {
                 numPaint.setTextSize(20f*factor);
                 numPaint.setTypeface(Typeface.DEFAULT_BOLD);
                 int textWidth=(int)numPaint.measureText(num, 0, num.length());
-
-                Log.e(TAG, "text width:"+textWidth);
 
                 int circleCenter = (int) (15*factor);//中心坐标
                 int circleRadius = (int) (13*factor);//圆的半径
@@ -176,8 +167,6 @@ public abstract class UserManagerCompat {
                 numPaint.setTextSize(20f*factor);
                 numPaint.setTypeface(Typeface.DEFAULT_BOLD);
                 int textWidth=(int)numPaint.measureText(num, 0, num.length());
-
-                Log.e(TAG, "text width:"+textWidth);
 
                 //绘制外面的圆形
                 //Paint outCirPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
