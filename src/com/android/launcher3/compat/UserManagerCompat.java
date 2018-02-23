@@ -78,6 +78,9 @@ public abstract class UserManagerCompat {
     }
 
     public static int toUserId(UserHandle user) {
+        if (user == null) {
+            return 0;
+        }
         return mirror.android.os.UserHandle.getIdentifier.call(user);
     }
 
