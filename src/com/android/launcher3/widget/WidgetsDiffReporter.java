@@ -65,7 +65,7 @@ public class WidgetsDiffReporter {
         Iterator<WidgetListRowEntry> orgIter = orgEntries.iterator();
         Iterator<WidgetListRowEntry> newIter = newEntries.iterator();
 
-        WidgetListRowEntry orgRowEntry = orgIter.next();
+        WidgetListRowEntry orgRowEntry = orgIter.hasNext() ? orgIter.next() : null;
         WidgetListRowEntry newRowEntry = newIter.next();
 
         do {
