@@ -124,9 +124,13 @@ public abstract class SystemShortcut extends ItemInfo {
                             .setTitle(R.string.home_menu_kill_title)
                             .setMessage(launcher.getResources().getString(R.string.home_menu_kill_content, itemInfo.title))
                             .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                                UserHandle user = itemInfo.user;
-                                int userId = UserManagerCompat.toUserId(user);
-                                VirtualCore.get().killApp(packageName, userId);
+                                try {
+                                    UserHandle user = itemInfo.user;
+                                    int userId = UserManagerCompat.toUserId(user);
+                                    VirtualCore.get().killApp(packageName, userId);
+                                } catch (Throwable e) {
+                                    Toast.makeText(launcher, "Kill " + itemInfo.title + " Failed, please try again.", Toast.LENGTH_SHORT).show();
+                                }
                             })
                             .setNegativeButton(android.R.string.no, null)
                             .create();
