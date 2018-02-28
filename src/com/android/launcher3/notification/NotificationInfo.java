@@ -74,7 +74,11 @@ public class NotificationInfo implements View.OnClickListener {
         if (icon == null) {
             // Use the small icon.
             icon = notification.getSmallIcon();
-            mIconDrawable = icon.loadDrawable(context);
+            if (icon == null) {
+                mIconDrawable = context.getApplicationInfo().loadIcon(context.getPackageManager());
+            } else {
+                mIconDrawable = icon.loadDrawable(context);
+            }
             mIconColor = statusBarNotification.getNotification().color;
             mIsIconLarge = false;
         } else {
