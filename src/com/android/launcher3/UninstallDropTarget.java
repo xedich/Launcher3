@@ -125,9 +125,13 @@ public class UninstallDropTarget extends ButtonDropTarget {
                     .setTitle(R.string.home_menu_delete_title)
                     .setMessage(launcher.getResources().getString(R.string.home_menu_delete_content, info.title))
                     .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                        UserHandle user = info.user;
-                        int userId = UserManagerCompat.toUserId(user);
-                        VirtualCore.get().uninstallPackageAsUser(packageName, userId);
+                        try {
+                            UserHandle user = info.user;
+                            int userId = UserManagerCompat.toUserId(user);
+                            VirtualCore.get().uninstallPackageAsUser(packageName, userId);
+                        } catch (Throwable e) {
+                            Toast.makeText(launcher, "Uninstall failed, please try again.", Toast.LENGTH_SHORT).show();
+                        }
                     })
                     .setNegativeButton(android.R.string.no, null)
                     .create();
