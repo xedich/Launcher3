@@ -350,4 +350,8 @@
     <string name="msg_disable_suggestions_prompt">"Suggestions won't appear at the top of your apps list, and the usage data used to create them will be permanently erased."</string>
     <string name="label_turn_off_suggestions">TURN OFF</string>
     <string name="the_coming_feature">The coming</string>
+    <string name="change_wallpaper" >Change Wallpaper</string>
+    <string name="wallpaper_set">Select Picture</string>
+    <string name="wallpaper_restore">Restore Default</string>
+    <string name="wallpaper_changing">Changing Wallpaper…</string>
 </resources>

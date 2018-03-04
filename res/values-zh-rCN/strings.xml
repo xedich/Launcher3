@@ -158,4 +158,8 @@
     <string name="msg_disable_suggestions_prompt">关闭后，系统将不会在您的应用列表顶部显示推荐应用，并且将永久清空用于生成这些信息的使用数据。</string>
     <string name="label_turn_off_suggestions">关闭</string>
     <string name="the_coming_feature">即将支持…</string>
+    <string name="change_wallpaper">更换壁纸</string>
+    <string name="wallpaper_set" >选择图片</string>
+    <string name="wallpaper_restore">恢复默认</string>
+    <string name="wallpaper_changing">正在更换壁纸…</string>
 </resources>

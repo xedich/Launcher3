@@ -81,6 +81,11 @@
         android:defaultValue=""
         android:persistent="true" />
 
+    <com.android.launcher3.views.ButtonPreference
+        android:key="change_wallpaper"
+        android:title="@string/change_wallpaper"
+        android:persistent="false" />
+
     <PreferenceScreen
         android:key="about_screen"
         android:title="@string/about"

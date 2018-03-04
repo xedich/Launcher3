@@ -21,21 +21,35 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.provider.MediaStore;
 import android.provider.Settings;
+import android.view.View;
+import android.widget.PopupMenu;
 
 import com.android.launcher3.graphics.IconShapeOverride;
 import com.android.launcher3.notification.NotificationListener;
 import com.android.launcher3.util.SettingsObserver;
 import com.android.launcher3.views.ButtonPreference;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 /**
  * Settings activity for Launcher. Currently implements the following setting: Allow rotation
@@ -47,6 +61,9 @@ public class SettingsActivity extends Activity {
     public static final String NOTIFICATION_BADGING = "notification_badging";
     /** Hidden field Settings.Secure.ENABLED_NOTIFICATION_LISTENERS */
     private static final String NOTIFICATION_ENABLED_LISTENERS = "enabled_notification_listeners";
+    private static final String WALLPAPER_FILE = "wallpaper.png";
+
+    private static final int RESULT_LOAD_IMAGE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,8 +132,107 @@ public class SettingsActivity extends Activity {
                     getPreferenceScreen().removePreference(iconShapeOverride);
                 }
             }
+
+            ButtonPreference changeWallpaper = (ButtonPreference) findPreference("change_wallpaper");
+
+            if (changeWallpaper != null) {
+                changeWallpaper.setOnPreferenceClickListener(preference -> {
+
+                    try {
+                        View v = changeWallpaper.getView();
+                        PopupMenu popupMenu = new PopupMenu(getActivity(), v);
+                        popupMenu.inflate(R.menu.change_wallpaper);
+                        popupMenu.setOnMenuItemClickListener(item -> {
+                            int i = item.getItemId();
+                            if (i == R.id.action_wallpaper_restore) {
+                                Activity activity = getActivity();
+                                if (activity != null) {
+                                    activity.getFileStreamPath("wallpaper.png").delete();
+                                }
+                            } else if (i == R.id.action_wallpaper_set) {
+                                Intent intent = new Intent(Intent.ACTION_PICK, null);
+                                final String IMAGE_UNSPECIFIED = "image/*";//随意图片类型
+                                intent.setDataAndType(
+                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                        IMAGE_UNSPECIFIED);
+
+                                startActivityForResult(intent, RESULT_LOAD_IMAGE);
+                            }
+                            return false;
+                        });
+                        popupMenu.show();
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
+                    return false;
+                });
+            }
         }
 
+        private static class WallpaperChooseTask extends AsyncTask<Void, Void, Void> {
+
+            WeakReference<ProgressDialog> mRef;
+            WeakReference<Context> mActivityRef;
+            String picturePath;
+            WallpaperChooseTask(ProgressDialog dialog, String path) {
+                mRef = new WeakReference<>(dialog);
+                mActivityRef = new WeakReference<>(dialog.getContext());
+                picturePath = path;
+            }
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                try {
+                    ProgressDialog progressDialog = mRef.get();
+                    if (progressDialog == null) {
+                        return;
+                    }
+                    progressDialog.show();
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                Context context = mActivityRef.get();
+                if (context == null) {
+                    return null;
+                }
+                Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+                File fileStreamPath = context.getFileStreamPath(WALLPAPER_FILE);
+                FileOutputStream fos = null;
+                try {
+                    fos = new FileOutputStream(fileStreamPath);
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 90, fos);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (fos != null) {
+                        try {
+                            fos.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                try {
+                    ProgressDialog progressDialog = mRef.get();
+                    if (progressDialog == null) {
+                        return;
+                    }
+                    progressDialog.hide();
+                } catch (Throwable ignored) {
+                }
+            }
+        }
         @Override
         public void onDestroy() {
             if (mRotationLockObserver != null) {
@@ -128,6 +244,35 @@ public class SettingsActivity extends Activity {
                 mIconBadgingObserver = null;
             }
             super.onDestroy();
+        }
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            super.onActivityResult(requestCode, resultCode, data);
+            if (resultCode == RESULT_OK && requestCode == RESULT_LOAD_IMAGE) {
+                Uri selectedImage = data.getData();
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+                try {
+                    Cursor cursor = getActivity().getContentResolver().query(selectedImage,
+                            filePathColumn, null, null, null);
+                    if (cursor == null) {
+                        return;
+                    }
+                    cursor.moveToFirst();
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                    String picturePath = cursor.getString(columnIndex);
+                    cursor.close();
+
+                    ProgressDialog progressDialog = new ProgressDialog(getActivity());
+                    progressDialog.setTitle(R.string.wallpaper_changing);
+                    progressDialog.setCancelable(false);
+                    new WallpaperChooseTask(progressDialog, picturePath).execute();
+
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

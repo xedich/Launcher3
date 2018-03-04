@@ -8,7 +8,7 @@ import java.lang.reflect.Field;
 
 public class BuildUtil {
 
-    private static final boolean ENABLE_DYNAMIC_ID = true;
+    private static final boolean ENABLE_DYNAMIC_ID = false;
     private static final String DEFAULT_ID = "io.va.exposed";
 
     public static String getApplicationId() {

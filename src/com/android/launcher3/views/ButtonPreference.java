@@ -30,6 +30,8 @@ public class ButtonPreference extends Preference {
 
     private boolean mWidgetFrameVisible = false;
 
+    private View mView;
+
     public ButtonPreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
@@ -57,9 +59,14 @@ public class ButtonPreference extends Preference {
     protected void onBindView(View view) {
         super.onBindView(view);
 
+        mView = view;
         ViewGroup widgetFrame = view.findViewById(android.R.id.widget_frame);
         if (widgetFrame != null) {
             widgetFrame.setVisibility(mWidgetFrameVisible ? View.VISIBLE : View.GONE);
         }
+    }
+
+    public View getView() {
+        return mView;
     }
 }

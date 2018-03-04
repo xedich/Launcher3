@@ -4040,6 +4040,12 @@ public class Launcher extends BaseActivity
         return ((Launcher) ((ContextWrapper) context).getBaseContext());
     }
 
+    protected void setOurWallpaper(Drawable d) {
+        if (d == null) {
+            return;
+        }
+        mLauncherView.setBackgroundDrawable(d);
+    }
     private class RotationPrefChangeHandler implements OnSharedPreferenceChangeListener {
 
         @Override
