@@ -415,7 +415,6 @@ public class Launcher extends BaseActivity
         mPaused = false;
 
         mLauncherView = LayoutInflater.from(this).inflate(R.layout.launcher, null);
-        mLauncherView.setBackgroundResource(R.drawable.home_bg);
 
         setupViews();
         mDeviceProfile.layout(this, false /* notifyListeners */);
