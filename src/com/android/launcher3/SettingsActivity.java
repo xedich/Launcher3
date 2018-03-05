@@ -216,6 +216,9 @@ public class SettingsActivity extends Activity {
                             e.printStackTrace();
                         }
                     }
+                    if (bitmap != null && !bitmap.isRecycled()) {
+                        bitmap.recycle();
+                    }
                 }
                 return null;
             }
