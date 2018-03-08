@@ -55,7 +55,7 @@ public class WidgetsDiffReporter {
             Log.d(TAG, "process oldEntries#=" + currentEntries.size()
                     + " newEntries#=" + newEntries.size());
         }
-        if (currentEntries.size() == 0 && newEntries.size() > 0) {
+        if (currentEntries.size() == 0 && newEntries.size() >= 0) {
             currentEntries.addAll(newEntries);
             mListener.notifyDataSetChanged();
             return;
@@ -66,7 +66,7 @@ public class WidgetsDiffReporter {
         Iterator<WidgetListRowEntry> newIter = newEntries.iterator();
 
         WidgetListRowEntry orgRowEntry = orgIter.hasNext() ? orgIter.next() : null;
-        WidgetListRowEntry newRowEntry = newIter.next();
+        WidgetListRowEntry newRowEntry = newIter.hasNext() ? newIter.next() : null;
 
         do {
             int diff = comparePackageName(orgRowEntry, newRowEntry, comparator);
