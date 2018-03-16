@@ -10,6 +10,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -136,7 +137,12 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
                 listener.onPackageRemoved(packageName, userHandle);
             }
         };
-        mVirtualCore.registerObserver(mPackageObserver);
+        try {
+            mVirtualCore.registerObserver(mPackageObserver);
+        } catch (Throwable e) {
+            // register error, may to early?
+            new Handler().postDelayed(() -> mVirtualCore.registerObserver(mPackageObserver), 1000);
+        }
     }
 
     @Override
