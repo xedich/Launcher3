@@ -144,7 +144,7 @@ public class Hotseat extends FrameLayout
                     bounds.bottom - scaleDownPx / 2);
             allAppsButton.setCompoundDrawables(null, d, null, null);
 
-            allAppsButton.setContentDescription(context.getString(R.string.all_apps_button_label));
+            allAppsButton.setContentDescription(context.getString(R.string.settings_button_text));
             allAppsButton.setOnKeyListener(new HotseatIconKeyEventListener());
             if (mLauncher != null) {
                 mLauncher.setAllAppsButton(allAppsButton);
