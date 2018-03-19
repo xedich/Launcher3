@@ -75,10 +75,6 @@ public class Hotseat extends FrameLayout
             setBackground(mBackground);
         }
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        mSettingsView = (TextView)
-                inflater.inflate(com.android.launcher3.R.layout.all_apps_button, mContent, false);
-        mAddView = (TextView)
-                inflater.inflate(com.android.launcher3.R.layout.all_apps_button, mContent, false);
     }
 
     public CellLayout getLayout() {
