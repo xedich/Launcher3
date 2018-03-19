@@ -74,7 +74,6 @@ public class Hotseat extends FrameLayout
         if (!FeatureFlags.LAUNCHER3_GRADIENT_ALL_APPS) {
             setBackground(mBackground);
         }
-        LayoutInflater inflater = LayoutInflater.from(getContext());
     }
 
     public CellLayout getLayout() {
@@ -161,14 +160,6 @@ public class Hotseat extends FrameLayout
             lp.canReorder = false;
             mContent.addViewToCellLayout(allAppsButton, -1, allAppsButton.getId(), lp, true);
         }
-
-//        Drawable settingsDrawable = getResources().getDrawable(R.drawable.ic_hotseat_settings);
-//        Drawable addAppDrawable = getResources().getDrawable(R.drawable.ic_hotseat_addapp);
-//
-//        Drawable d = getResources().getDrawable(R.drawable.all_apps_button_icon);
-//
-//        addViewToHotseat(mAddView, addAppDrawable, 0);
-//        addViewToHotseat(mSettingsView, settingsDrawable, 1);
     }
 
     @Override
