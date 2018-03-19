@@ -131,7 +131,7 @@ public class Hotseat extends FrameLayout
     void resetLayout() {
         mContent.removeAllViewsInLayout();
 
-        if (!FeatureFlags.NO_ALL_APPS_ICON) {
+        if (true || !FeatureFlags.NO_ALL_APPS_ICON) {
             // Add the Apps button
             Context context = getContext();
             DeviceProfile grid = mLauncher.getDeviceProfile();
@@ -166,13 +166,13 @@ public class Hotseat extends FrameLayout
             mContent.addViewToCellLayout(allAppsButton, -1, allAppsButton.getId(), lp, true);
         }
 
-        Drawable settingsDrawable = getResources().getDrawable(R.drawable.ic_hotseat_settings);
-        Drawable addAppDrawable = getResources().getDrawable(R.drawable.ic_hotseat_addapp);
-
-        Drawable d = getResources().getDrawable(R.drawable.all_apps_button_icon);
-
-        addViewToHotseat(mAddView, addAppDrawable, 0);
-        addViewToHotseat(mSettingsView, settingsDrawable, 1);
+//        Drawable settingsDrawable = getResources().getDrawable(R.drawable.ic_hotseat_settings);
+//        Drawable addAppDrawable = getResources().getDrawable(R.drawable.ic_hotseat_addapp);
+//
+//        Drawable d = getResources().getDrawable(R.drawable.all_apps_button_icon);
+//
+//        addViewToHotseat(mAddView, addAppDrawable, 0);
+//        addViewToHotseat(mSettingsView, settingsDrawable, 1);
     }
 
     @Override
@@ -235,39 +235,4 @@ public class Hotseat extends FrameLayout
         return mBackgroundColor;
     }
 
-    private TextView mSettingsView;
-    private TextView mAddView;
-
-    public void setSettingClickListener(OnClickListener onClickListener) {
-        mSettingsView.setOnClickListener(onClickListener);
-    }
-
-    public void setAddAppClickListener(OnClickListener onClickListener) {
-        mAddView.setOnClickListener(onClickListener);
-    }
-
-    void addViewToHotseat(TextView textView, Drawable icon, int rank) {
-
-        // Add the Apps button
-        Context context = getContext();
-        DeviceProfile grid = mLauncher.getDeviceProfile();
-
-        icon.setBounds(0, 0, grid.iconSizePx, grid.iconSizePx);
-
-        int scaleDownPx = getResources().getDimensionPixelSize(com.android.launcher3.R.dimen.all_apps_button_scale_down);
-        Rect bounds = icon.getBounds();
-        icon.setBounds(bounds.left, bounds.top + scaleDownPx / 2, bounds.right - scaleDownPx,
-                bounds.bottom - scaleDownPx / 2);
-        textView.setCompoundDrawables(null, icon, null, null);
-
-        textView.setContentDescription(context.getString(com.android.launcher3.R.string.all_apps_button_label));
-        // allAppsButton.setOnKeyListener(new HotseatIconKeyEventListener());
-        textView.setOnFocusChangeListener(mLauncher.mFocusHandler);
-
-        int x = getCellXFromOrder(rank);
-        int y = getCellYFromOrder(rank);
-
-        CellLayout.LayoutParams lp = new CellLayout.LayoutParams(x, y, 1, 1);
-        mContent.addViewToCellLayout(textView, -1, 0, lp, true);
-    }
 }
