@@ -1218,11 +1218,11 @@ public class Launcher extends BaseActivity
                 mWorkspace.exitWidgetResizeMode();
 
                 // Show the overview mode if we are on the workspace
-                if (mState == State.WORKSPACE && !mWorkspace.isInOverviewMode() &&
-                        !mWorkspace.isSwitchingState()) {
-                    mOverviewPanel.requestFocus();
-                    showOverviewMode(true, true /* requestButtonFocus */);
-                }
+//                if (mState == State.WORKSPACE && !mWorkspace.isInOverviewMode() &&
+//                        !mWorkspace.isSwitchingState()) {
+//                    mOverviewPanel.requestFocus();
+//                    showOverviewMode(true, true /* requestButtonFocus */);
+//                }
             }
             return true;
         }
