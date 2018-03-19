@@ -162,4 +162,6 @@
     <string name="wallpaper_set" >选择图片</string>
     <string name="wallpaper_restore">恢复默认</string>
     <string name="wallpaper_changing">正在更换壁纸…</string>
+    <string name="launcher_settings_text">桌面设置</string>
+    <string name="launcher_add_app">添加应用</string>
 </resources>

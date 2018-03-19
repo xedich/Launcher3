@@ -53,7 +53,7 @@
         android:fontFamily="sans-serif-condensed"
         android:gravity="center_horizontal"
         android:stateListAnimator="@animator/overview_button_anim"
-        android:text="@string/widget_button_text"
+        android:text="@string/launcher_add_app"
         android:textAllCaps="true"
         android:textColor="?attr/workspaceTextColor"
         android:textSize="12sp" />
@@ -69,7 +69,7 @@
         android:fontFamily="sans-serif-condensed"
         android:gravity="center_horizontal"
         android:stateListAnimator="@animator/overview_button_anim"
-        android:text="@string/settings_button_text"
+        android:text="@string/launcher_settings_text"
         android:textAllCaps="true"
         android:textColor="?attr/workspaceTextColor"
         android:textSize="12sp" />

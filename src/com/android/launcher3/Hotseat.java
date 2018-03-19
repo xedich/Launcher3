@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -56,6 +57,9 @@ public class Hotseat extends FrameLayout
     private ColorDrawable mBackground;
     private ValueAnimator mBackgroundColorAnimator;
 
+    private static final String HIDE_SETTINGS_KEY = "advance_settings_hide_settings";
+    private boolean mShowSettingsButton = true;
+
     public Hotseat(Context context) {
         this(context, null);
     }
@@ -66,6 +70,7 @@ public class Hotseat extends FrameLayout
 
     public Hotseat(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        SharedPreferences sharedPreferences = context.getSharedPreferences(LauncherFiles.SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         mLauncher = Launcher.getLauncher(context);
         mHasVerticalHotseat = mLauncher.getDeviceProfile().isVerticalBarLayout();
         mBackgroundColor = ColorUtils.setAlphaComponent(
@@ -74,6 +79,7 @@ public class Hotseat extends FrameLayout
         if (!FeatureFlags.LAUNCHER3_GRADIENT_ALL_APPS) {
             setBackground(mBackground);
         }
+        mShowSettingsButton = !sharedPreferences.getBoolean(HIDE_SETTINGS_KEY, false);
     }
 
     public CellLayout getLayout() {
@@ -126,7 +132,7 @@ public class Hotseat extends FrameLayout
     void resetLayout() {
         mContent.removeAllViewsInLayout();
 
-        if (true || !FeatureFlags.NO_ALL_APPS_ICON) {
+        if (mShowSettingsButton) {
             // Add the Apps button
             Context context = getContext();
             DeviceProfile grid = mLauncher.getDeviceProfile();
