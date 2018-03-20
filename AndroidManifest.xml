@@ -103,7 +103,7 @@
         -->
         <activity
             android:name="com.google.android.apps.nexuslauncher.SettingsActivity"
-            android:label="@string/settings_button_text"
+            android:label="@string/launcher_settings_text"
             android:theme="@android:style/Theme.Material.Light"
             android:screenOrientation="portrait"
             android:autoRemoveFromRecents="true">
