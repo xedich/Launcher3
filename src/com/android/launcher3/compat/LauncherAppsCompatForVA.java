@@ -141,7 +141,13 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
             mVirtualCore.registerObserver(mPackageObserver);
         } catch (Throwable e) {
             // register error, may to early?
-            new Handler().postDelayed(() -> mVirtualCore.registerObserver(mPackageObserver), 1000);
+            new Handler().postDelayed(() -> {
+                try {
+                    mVirtualCore.registerObserver(mPackageObserver);
+                } catch (Throwable ignored) {
+                    ignored.printStackTrace();
+                }
+            }, 1000);
         }
     }
 
