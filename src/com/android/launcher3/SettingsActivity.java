@@ -156,7 +156,10 @@ public class SettingsActivity extends Activity {
                                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                                         IMAGE_UNSPECIFIED);
 
-                                startActivityForResult(intent, RESULT_LOAD_IMAGE);
+                                try {
+                                    startActivityForResult(intent, RESULT_LOAD_IMAGE);
+                                } catch (Throwable ignored) {
+                                }
                             }
                             return false;
                         });
