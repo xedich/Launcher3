@@ -16,14 +16,20 @@
 package com.android.launcher3.allapps;
 
 import android.content.Context;
+import android.content.pm.LauncherActivityInfo;
 import android.os.Process;
+import android.os.UserHandle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.android.launcher3.AppInfo;
+import com.android.launcher3.IconCache;
 import com.android.launcher3.Launcher;
+import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.compat.AlphabeticIndexCompat;
+import com.android.launcher3.compat.LauncherAppsCompat;
+import com.android.launcher3.compat.UserManagerCompat;
 import com.android.launcher3.config.FeatureFlags;
 import com.android.launcher3.discovery.AppDiscoveryAppInfo;
 import com.android.launcher3.discovery.AppDiscoveryItem;
@@ -624,11 +630,23 @@ public class AlphabeticalAppsList {
             return mApps;
         }
 
-        ArrayList<AppInfo> result = new ArrayList<>();
+        final LauncherAppsCompat launcherApps = LauncherAppsCompat.getInstance(mLauncher);
+        final IconCache iconCache = LauncherAppState.getInstance(mLauncher).getIconCache();
+        final UserManagerCompat userManagerCompat = UserManagerCompat.getInstance(mLauncher);
+        final ArrayList<AppInfo> result = new ArrayList<>();
         for (ComponentKey key : mSearchResults) {
             AppInfo match = mComponentToAppMap.get(key);
             if (match != null) {
                 result.add(match);
+            } else {
+                for (LauncherActivityInfo info : launcherApps.getActivityList(key.componentName.getPackageName(), key.user)) {
+                    if (info.getComponentName().equals(key.componentName)) {
+                        final AppInfo appInfo = new AppInfo(info, key.user, userManagerCompat.isQuietModeEnabled(key.user));
+                        iconCache.getTitleAndIcon(appInfo, false);
+                        result.add(appInfo);
+                        break;
+                    }
+                }
             }
         }
 

@@ -72,7 +72,7 @@ public class AllAppsList {
      * If the app is already in the list, doesn't add it.
      */
     public void add(AppInfo info, LauncherActivityInfo activityInfo) {
-        if (!mAppFilter.shouldShowApp(info.componentName)) {
+        if (!mAppFilter.shouldShowApp(info.componentName, info.user)) {
             return;
         }
         if (findAppInfo(info.componentName, info.user) != null) {
@@ -217,6 +217,25 @@ public class AllAppsList {
         }
     }
 
+    /**
+     * Add and remove icons for this package, depending on visibility.
+     */
+    public void reloadPackages(Context context, UserHandle user) {
+        for (final LauncherActivityInfo info : LauncherAppsCompat.getInstance(context).getActivityList(null, user)) {
+            AppInfo applicationInfo = findAppInfo(info.getComponentName(), user);
+            if (applicationInfo == null) {
+                add(new AppInfo(context, info, user), info);
+            }
+        }
+
+        for (int i = data.size() - 1; i >= 0; i--) {
+            final AppInfo applicationInfo = data.get(i);
+            if (user.equals(applicationInfo.user) && !mAppFilter.shouldShowApp(applicationInfo.componentName, applicationInfo.user)) {
+                removed.add(applicationInfo);
+                data.remove(i);
+            }
+        }
+    }
 
     /**
      * Returns whether <em>apps</em> contains <em>component</em>.

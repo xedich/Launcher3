@@ -5,12 +5,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.LauncherActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.UserHandle;
@@ -20,8 +20,11 @@ import com.android.launcher3.LauncherModel;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.compat.LauncherAppsCompat;
 import com.android.launcher3.compat.UserManagerCompat;
+import com.android.launcher3.graphics.DrawableFactory;
 import com.android.launcher3.shortcuts.DeepShortcutManager;
-import com.android.launcher3.shortcuts.ShortcutInfoCompat;
+import com.android.launcher3.util.ComponentKey;
+import com.google.android.apps.nexuslauncher.clock.CustomClock;
+import com.google.android.apps.nexuslauncher.clock.DynamicClock;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -30,23 +33,22 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class CustomIconProvider extends DynamicIconProvider implements Runnable {
+public class CustomIconProvider extends DynamicIconProvider {
+    public final static String DISABLE_PACK_PREF = "all_apps_disable_pack";
+
     private final Context mContext;
-    private final PackageManager mPackageManager;
+    private CustomDrawableFactory mFactory;
     private final BroadcastReceiver mDateChangeReceiver;
-    private final Map<String, Integer> mIconPackComponents = new HashMap<>();
-    private final Map<String, String> mIconPackCalendars = new HashMap<>();
-    private Thread mThread;
-    private String mIconPack;
     private int mDateOfMonth;
 
     public CustomIconProvider(Context context) {
         super(context);
         mContext = context;
+        mFactory = (CustomDrawableFactory) DrawableFactory.get(context);
+
         mDateChangeReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -57,25 +59,19 @@ public class CustomIconProvider extends DynamicIconProvider implements Runnable 
                     }
                     mDateOfMonth = dateOfMonth;
                 }
+                LauncherAppsCompat apps = LauncherAppsCompat.getInstance(mContext);
+                LauncherModel model = LauncherAppState.getInstance(context).getModel();
+                DeepShortcutManager shortcutManager = DeepShortcutManager.getInstance(context);
                 for (UserHandle user : UserManagerCompat.getInstance(context).getUserProfiles()) {
-                    LauncherAppsCompat apps = LauncherAppsCompat.getInstance(mContext);
                     Set<String> packages = new HashSet<>();
-                    for (Map.Entry<String, String> calendars : mIconPackCalendars.entrySet()) {
-                        ComponentName componentName = ComponentName.unflattenFromString(calendars.getKey().substring(14, calendars.getKey().length() - 1));
-                        if (componentName != null) {
-                            String pkg = componentName.getPackageName();
-                            if (!apps.getActivityList(pkg, user).isEmpty()) {
-                                packages.add(pkg);
-                            }
+                    for (ComponentName componentName : mFactory.packCalendars.keySet()) {
+                        String pkg = componentName.getPackageName();
+                        if (!apps.getActivityList(pkg, user).isEmpty()) {
+                            packages.add(pkg);
                         }
                     }
-                    LauncherModel model = LauncherAppState.getInstance(context).getModel();
                     for (String pkg : packages) {
-                        model.onPackageChanged(pkg, user);
-                        List<ShortcutInfoCompat> shortcuts = DeepShortcutManager.getInstance(context).queryForPinnedShortcuts(pkg, user);
-                        if (!shortcuts.isEmpty()) {
-                            model.updatePinnedShortcuts(pkg, shortcuts, user);
-                        }
+                        CustomIconUtils.reloadIcon(shortcutManager, model, user, pkg);
                     }
                 }
             }
@@ -87,100 +83,109 @@ public class CustomIconProvider extends DynamicIconProvider implements Runnable 
             intentFilter.addAction(Intent.ACTION_TIME_TICK);
         }
         mContext.registerReceiver(mDateChangeReceiver, intentFilter, null, new Handler(LauncherModel.getWorkerLooper()));
-
-        mPackageManager = context.getPackageManager();
-
-        mThread = new Thread(this);
-        mThread.start();
-    }
-
-    @Override
-    public void run() {
-        mIconPack = Utilities.getPrefs(mContext).getString(SettingsActivity.ICON_PACK_PREF, "");
-        if (CustomIconUtils.isPackProvider(mContext, mIconPack)) {
-            try {
-                Resources res = mPackageManager.getResourcesForApplication(mIconPack);
-                int resId = res.getIdentifier("appfilter", "xml", mIconPack);
-                if (resId != 0) {
-                    XmlResourceParser parseXml = mPackageManager.getXml(mIconPack, resId, null);
-                    while (parseXml.next() != XmlPullParser.END_DOCUMENT) {
-                        if (parseXml.getEventType() == XmlPullParser.START_TAG) {
-                            boolean isCalendar = parseXml.getName().equals("calendar");
-                            if (isCalendar || parseXml.getName().equals("item")) {
-                                String componentName = parseXml.getAttributeValue(null, "component");
-                                String drawableName = parseXml.getAttributeValue(null, isCalendar ? "prefix" : "drawable");
-                                if (componentName != null && drawableName != null) {
-                                    if (isCalendar) {
-                                        mIconPackCalendars.put(componentName, drawableName);
-                                    } else {
-                                        int drawableId = res.getIdentifier(drawableName, "drawable", mIconPack);
-                                        if (drawableId != 0) {
-                                            mIconPackComponents.put(componentName, drawableId);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (PackageManager.NameNotFoundException | XmlPullParserException | IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     @Override
     public Drawable getIcon(LauncherActivityInfo launcherActivityInfo, int iconDpi, boolean flattenDrawable) {
-        try {
-            mThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        mFactory.ensureInitialLoadComplete();
 
         String packageName = launcherActivityInfo.getApplicationInfo().packageName;
-        String component = launcherActivityInfo.getComponentName().toString();
+        ComponentName component = launcherActivityInfo.getComponentName();
         Drawable drawable = null;
-        if (mIconPackCalendars.containsKey(component)) {
-            try {
-                Resources res = mPackageManager.getResourcesForApplication(mIconPack);
-                int drawableId = res.getIdentifier(mIconPackCalendars.get(component)
-                        + Calendar.getInstance().get(Calendar.DAY_OF_MONTH), "drawable", mIconPack);
-                if (drawableId != 0) {
-                    drawable = mPackageManager.getDrawable(mIconPack, drawableId, null);
+        if (CustomIconUtils.usingValidPack(mContext) && isEnabledForApp(mContext, new ComponentKey(component, launcherActivityInfo.getUser()))) {
+            PackageManager pm = mContext.getPackageManager();
+            if (mFactory.packCalendars.containsKey(component)) {
+                try {
+                    Resources res = pm.getResourcesForApplication(mFactory.iconPack);
+                    int drawableId = res.getIdentifier(mFactory.packCalendars.get(component)
+                            + Calendar.getInstance().get(Calendar.DAY_OF_MONTH), "drawable", mFactory.iconPack);
+                    if (drawableId != 0) {
+                        drawable = pm.getDrawable(mFactory.iconPack, drawableId, null);
+                    }
+                } catch (PackageManager.NameNotFoundException ignored) {
                 }
-            } catch (PackageManager.NameNotFoundException ignored) {
+            } else if (mFactory.packComponents.containsKey(component)) {
+                int drawableId = mFactory.packComponents.get(component);
+                drawable = pm.getDrawable(mFactory.iconPack, mFactory.packComponents.get(component), null);
+                if (Utilities.ATLEAST_OREO && mFactory.packClocks.containsKey(drawableId)) {
+                    drawable = CustomClock.getClock(mContext, drawable, mFactory.packClocks.get(drawableId), iconDpi);
+                }
             }
-        } else if (mIconPackComponents.containsKey(component)) {
-            drawable = mPackageManager.getDrawable(mIconPack, mIconPackComponents.get(component), null);
         }
 
-        if (drawable == null) {
-            drawable = super.getIcon(launcherActivityInfo, iconDpi, flattenDrawable);
-            if ((!Utilities.ATLEAST_OREO || !(drawable instanceof AdaptiveIconDrawable)) &&
-                    !"com.google.android.calendar".equals(packageName)) {
-                Drawable roundIcon = getRoundIcon(packageName, iconDpi);
-                if (roundIcon != null) {
-                    drawable = roundIcon;
-                }
-            }
+        if (drawable == null && !DynamicIconProvider.GOOGLE_CALENDAR.equals(packageName) && !DynamicClock.DESK_CLOCK.equals(component)) {
+            drawable = getRoundIcon(component, iconDpi);
         }
-        return drawable;
+        return drawable == null ? super.getIcon(launcherActivityInfo, iconDpi, flattenDrawable) : drawable.mutate();
     }
 
-    private Drawable getRoundIcon(String packageName, int iconDpi) {
+    private Drawable getRoundIcon(ComponentName component, int iconDpi) {
+        String appIcon = null;
+        Map<String, String> elementTags = new HashMap<>();
+
         try {
-            Resources resourcesForApplication = mPackageManager.getResourcesForApplication(packageName);
+            Resources resourcesForApplication = mContext.getPackageManager().getResourcesForApplication(component.getPackageName());
             AssetManager assets = resourcesForApplication.getAssets();
+
             XmlResourceParser parseXml = assets.openXmlResourceParser("AndroidManifest.xml");
-            while (parseXml.next() != XmlPullParser.END_DOCUMENT)
-                if (parseXml.getEventType() == XmlPullParser.START_TAG && parseXml.getName().equals("application"))
-                    for (int i = 0; i < parseXml.getAttributeCount(); i++)
-                        if (parseXml.getAttributeName(i).equals("roundIcon"))
-                            return resourcesForApplication.getDrawableForDensity(Integer.parseInt(parseXml.getAttributeValue(i).substring(1)), iconDpi);
+            while (parseXml.next() != XmlPullParser.END_DOCUMENT) {
+                if (parseXml.getEventType() == XmlPullParser.START_TAG) {
+                    String name = parseXml.getName();
+                    for (int i = 0; i < parseXml.getAttributeCount(); i++) {
+                        elementTags.put(parseXml.getAttributeName(i), parseXml.getAttributeValue(i));
+                    }
+                    if (elementTags.containsKey("roundIcon")) {
+                        if (name.equals("application")) {
+                            appIcon = elementTags.get("roundIcon");
+                        } else if ((name.equals("activity") || name.equals("activity-alias")) &&
+                                elementTags.containsKey("name") &&
+                                elementTags.get("name").equals(component.getClassName())) {
+                            appIcon = elementTags.get("roundIcon");
+                            break;
+                        }
+                    }
+                    elementTags.clear();
+                }
+            }
             parseXml.close();
+
+            if (appIcon != null) {
+                int resId = Integer.parseInt(appIcon.substring(1));
+                return resourcesForApplication.getDrawableForDensity(resId, iconDpi);
+            }
         } catch (PackageManager.NameNotFoundException | Resources.NotFoundException | IOException | XmlPullParserException ex) {
             ex.printStackTrace();
         }
         return null;
+    }
+
+    static void clearDisabledApps(Context context) {
+        setDisabledApps(context, new HashSet<String>());
+    }
+
+    static boolean isEnabledForApp(Context context, ComponentKey key) {
+        return !getDisabledApps(context).contains(key.toString());
+    }
+
+    static void setAppState(Context context, ComponentKey key, boolean enabled) {
+        String comp = key.toString();
+        Set<String> disabledApps = getDisabledApps(context);
+        while (disabledApps.contains(comp)) {
+            disabledApps.remove(comp);
+        }
+        if (!enabled) {
+            disabledApps.add(comp);
+        }
+        setDisabledApps(context, disabledApps);
+    }
+
+    private static Set<String> getDisabledApps(Context context) {
+        return new HashSet<>(Utilities.getPrefs(context).getStringSet(DISABLE_PACK_PREF, new HashSet<String>()));
+    }
+
+    private static void setDisabledApps(Context context, Set<String> disabledApps) {
+        SharedPreferences.Editor editor = Utilities.getPrefs(context).edit();
+        editor.putStringSet(DISABLE_PACK_PREF, disabledApps);
+        editor.apply();
     }
 }
