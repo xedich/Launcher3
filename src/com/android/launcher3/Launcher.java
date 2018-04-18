@@ -1341,6 +1341,7 @@ public class Launcher extends BaseActivity
             @Override
             public void handleViewClick(View view) {
                 onClickAddWidgetButton(view);
+                view.postDelayed(() -> showWorkspace(false), 500);
             }
         }.attachTo(mWidgetsButton);
 
@@ -1352,6 +1353,7 @@ public class Launcher extends BaseActivity
                 @Override
                 public void handleViewClick(View view) {
                     onClickSettingsButton(view);
+                    view.postDelayed(() -> showWorkspace(false), 500);
                 }
             }.attachTo(settingsButton);
         } else {
