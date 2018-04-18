@@ -1380,6 +1380,7 @@ public class Workspace extends PagedView
                 (amount >= 0 && (!hasCustomContent() || !mIsRtl));
 
         boolean shouldScrollOverlay = mLauncherOverlay != null &&
+                !mLauncher.isAllAppsVisible() &&
                 ((amount <= 0 && !mIsRtl) || (amount >= 0 && mIsRtl));
 
         boolean shouldZeroOverlay = mLauncherOverlay != null && mLastOverlayScroll != 0 &&
@@ -1475,6 +1476,14 @@ public class Workspace extends PagedView
         if (currentChild != null) {
             property.set(currentChild, translation);
             currentChild.setAlpha(finalAlpha);
+        }
+
+        if (direction == Direction.Y) {
+            View nextChild = getChildAt(getNextPage());
+            if (nextChild != null) {
+                property.set(nextChild, translation);
+                nextChild.setAlpha(finalAlpha);
+            }
         }
 
         // When the animation finishes, reset all pages, just in case we missed a page.
@@ -2549,8 +2558,8 @@ public class Workspace extends PagedView
                         // in its final location
 
                         final LauncherAppWidgetHostView hostView = (LauncherAppWidgetHostView) cell;
-                        AppWidgetProviderInfo pInfo = hostView.getAppWidgetInfo();
-                        if (pInfo != null && pInfo.resizeMode != AppWidgetProviderInfo.RESIZE_NONE
+                        LauncherAppWidgetProviderInfo pInfo = (LauncherAppWidgetProviderInfo) hostView.getAppWidgetInfo();
+                        if (pInfo != null && (pInfo.resizeMode != AppWidgetProviderInfo.RESIZE_NONE || pInfo.minSpanX > 1 || pInfo.minSpanY > 1)
                                 && !d.accessibleDrag) {
                             mDelayedResizeRunnable = new Runnable() {
                                 public void run() {

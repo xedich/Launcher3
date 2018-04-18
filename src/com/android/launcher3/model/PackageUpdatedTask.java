@@ -69,6 +69,7 @@ public class PackageUpdatedTask extends BaseModelUpdateTask {
     public static final int OP_SUSPEND = 5; // package suspended
     public static final int OP_UNSUSPEND = 6; // package unsuspended
     public static final int OP_USER_AVAILABILITY_CHANGE = 7; // user available/unavailable
+    public static final int OP_RELOAD = 8; // clears cache
 
     private final int mOp;
     private final UserHandle mUser;
@@ -148,6 +149,10 @@ public class PackageUpdatedTask extends BaseModelUpdateTask {
                 matcher = ItemInfoMatcher.ofUser(mUser);
                 appsList.updateDisabledFlags(matcher, flagOp);
                 break;
+            case OP_RELOAD:
+                if (DEBUG) Log.d(TAG, "mAllAppsList.reloadPackages");
+                appsList.reloadPackages(context, mUser);
+                break;
         }
 
         final ArrayList<AppInfo> addedOrModified = new ArrayList<>();
@@ -160,7 +165,7 @@ public class PackageUpdatedTask extends BaseModelUpdateTask {
         appsList.removed.clear();
 
         final ArrayMap<ComponentName, AppInfo> addedOrUpdatedApps = new ArrayMap<>();
-        if (!addedOrModified.isEmpty()) {
+        if (!addedOrModified.isEmpty() || mOp == OP_UPDATE) {
             scheduleCallbackTask(new CallbackTask() {
                 @Override
                 public void execute(Callbacks callbacks) {

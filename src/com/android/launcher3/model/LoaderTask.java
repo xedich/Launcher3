@@ -706,15 +706,17 @@ public class LoaderTask implements Runnable {
                         LauncherSettings.Settings.METHOD_REMOVE_GHOST_WIDGETS);
             }
 
-            // Unpin shortcuts that don't exist on the workspace.
-            HashSet<ShortcutKey> pendingShortcuts =
-                    InstallShortcutReceiver.getPendingShortcuts(context);
-            for (ShortcutKey key : shortcutKeyToPinnedShortcuts.keySet()) {
-                MutableInt numTimesPinned = mBgDataModel.pinnedShortcutCounts.get(key);
-                if ((numTimesPinned == null || numTimesPinned.value == 0)
-                        && !pendingShortcuts.contains(key)) {
-                    // Shortcut is pinned but doesn't exist on the workspace; unpin it.
-                    mShortcutManager.unpinShortcut(key);
+            if (Utilities.ATLEAST_NOUGAT_MR1) {
+                // Unpin shortcuts that don't exist on the workspace.
+                HashSet<ShortcutKey> pendingShortcuts =
+                        InstallShortcutReceiver.getPendingShortcuts(context);
+                for (ShortcutKey key : shortcutKeyToPinnedShortcuts.keySet()) {
+                    MutableInt numTimesPinned = mBgDataModel.pinnedShortcutCounts.get(key);
+                    if ((numTimesPinned == null || numTimesPinned.value == 0)
+                            && !pendingShortcuts.contains(key)) {
+                        // Shortcut is pinned but doesn't exist on the workspace; unpin it.
+                        mShortcutManager.unpinShortcut(key);
+                    }
                 }
             }
 
@@ -808,9 +810,8 @@ public class LoaderTask implements Runnable {
                 Log.d(TAG, "getActivityList got " + apps.size() + " apps for user " + user);
             }
             // Fail if we don't have any apps
-            // TODO: Fix this. Only fail for the current user.
             if (apps == null || apps.isEmpty()) {
-                return;
+                continue;
             }
             boolean quietMode = mUserManager.isQuietModeEnabled(user);
             // Create the ApplicationInfos
