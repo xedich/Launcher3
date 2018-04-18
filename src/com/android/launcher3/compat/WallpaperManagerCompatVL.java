@@ -128,7 +128,8 @@ public class WallpaperManagerCompatVL extends WallpaperManagerCompat {
         JobInfo job = new JobInfo.Builder(Utilities.WALLPAPER_COMPAT_JOB_ID,
                 new ComponentName(mContext, ColorExtractionService.class))
                 .setMinimumLatency(0).build();
-        ((JobScheduler) mContext.getSystemService(Context.JOB_SCHEDULER_SERVICE)).schedule(job);
+        // FIXME: why
+        // ((JobScheduler) mContext.getSystemService(Context.JOB_SCHEDULER_SERVICE)).schedule(job);
     }
 
     private void handleResult(String result) {
