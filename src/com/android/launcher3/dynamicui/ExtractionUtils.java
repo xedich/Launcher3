@@ -18,9 +18,7 @@ package com.android.launcher3.dynamicui;
 
 import android.annotation.TargetApi;
 import android.app.WallpaperManager;
-import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -69,9 +67,9 @@ public class ExtractionUtils {
         }
         JobScheduler jobScheduler = (JobScheduler) context.getSystemService(
                 Context.JOB_SCHEDULER_SERVICE);
-        jobScheduler.schedule(new JobInfo.Builder(Utilities.COLOR_EXTRACTION_JOB_ID,
-                new ComponentName(context, ColorExtractionService.class))
-                .setMinimumLatency(0).build());
+//        jobScheduler.schedule(new JobInfo.Builder(Utilities.COLOR_EXTRACTION_JOB_ID,
+//                new ComponentName(context, ColorExtractionService.class))
+//                .setMinimumLatency(0).build());
     }
 
     private static boolean hasWallpaperIdChanged(Context context) {
