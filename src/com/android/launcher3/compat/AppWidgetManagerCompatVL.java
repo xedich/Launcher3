@@ -56,16 +56,21 @@ class AppWidgetManagerCompatVL extends AppWidgetManagerCompat {
             }
             return providers;
         }
-        // Only get providers for the given package/user.
-        List<AppWidgetProviderInfo> providers = new ArrayList<>(mAppWidgetManager
-                .getInstalledProvidersForProfile(packageUser.mUser));
-        Iterator<AppWidgetProviderInfo> iterator = providers.iterator();
-        while (iterator.hasNext()) {
-            if (!iterator.next().provider.getPackageName().equals(packageUser.mPackageName)) {
-                iterator.remove();
+        try {
+            // Only get providers for the given package/user.
+            List<AppWidgetProviderInfo> providers = new ArrayList<>(mAppWidgetManager
+                    .getInstalledProvidersForProfile(packageUser.mUser));
+            Iterator<AppWidgetProviderInfo> iterator = providers.iterator();
+            while (iterator.hasNext()) {
+                if (!iterator.next().provider.getPackageName().equals(packageUser.mPackageName)) {
+                    iterator.remove();
+                }
             }
+            return providers;
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return Collections.emptyList();
         }
-        return providers;
     }
 
     @Override
