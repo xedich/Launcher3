@@ -1,7 +1,9 @@
 package com.android.launcher3.popup;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -220,7 +222,9 @@ public abstract class SystemShortcut extends ItemInfo {
                     }
                 };
 
-                if (VirtualCore.get().createShortcut(userId, packageName, listener)) {
+                Intent splashIntent = new Intent();
+                splashIntent.setComponent(new ComponentName(VirtualCore.get().getHostPkg(), "io.virtualapp.home.LoadingActivity"));
+                if (VirtualCore.get().createShortcut(userId, packageName, splashIntent, listener)) {
                     if (!Utilities.ATLEAST_OREO) {
                         Toast.makeText(VirtualCore.get().getContext(),
                                 R.string.create_shortcut_success, Toast.LENGTH_SHORT).show();
