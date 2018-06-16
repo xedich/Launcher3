@@ -203,13 +203,14 @@ public class SettingsActivity extends Activity {
                 if (context == null) {
                     return null;
                 }
-                Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
-                File fileStreamPath = context.getFileStreamPath(WALLPAPER_FILE);
                 FileOutputStream fos = null;
+                Bitmap bitmap = null;
                 try {
+                    bitmap = BitmapFactory.decodeFile(picturePath);
+                    File fileStreamPath = context.getFileStreamPath(WALLPAPER_FILE);
                     fos = new FileOutputStream(fileStreamPath);
                     bitmap.compress(Bitmap.CompressFormat.PNG, 90, fos);
-                } catch (IOException e) {
+                } catch (Throwable e) {
                     e.printStackTrace();
                 } finally {
                     if (fos != null) {
