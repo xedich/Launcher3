@@ -8,7 +8,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -17,7 +16,6 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.TwoStatePreference;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.android.launcher3.R;
 
@@ -26,7 +24,6 @@ public class SettingsActivity extends com.android.launcher3.SettingsActivity imp
     public final static String SHOW_PREDICTIONS_PREF = "pref_show_predictions";
     public final static String ENABLE_MINUS_ONE_PREF = "pref_enable_minus_one";
     public final static String SMARTSPACE_PREF = "pref_smartspace";
-    public final static String APP_VERSION_PREF = "about_app_version";
     private final static String GOOGLE_APP = "com.google.android.googlequicksearchbox";
 
     @Override
@@ -61,14 +58,6 @@ public class SettingsActivity extends com.android.launcher3.SettingsActivity imp
 
             findPreference(SHOW_PREDICTIONS_PREF).setOnPreferenceChangeListener(this);
             findPreference(ENABLE_MINUS_ONE_PREF).setTitle(getDisplayGoogleTitle());
-
-            PackageManager packageManager = mContext.getPackageManager();
-            try {
-                PackageInfo packageInfo = packageManager.getPackageInfo(mContext.getPackageName(), 0);
-                findPreference(APP_VERSION_PREF).setSummary(packageInfo.versionName);
-            } catch (PackageManager.NameNotFoundException ex) {
-                Log.e("SettingsActivity", "Unable to load my own package info", ex);
-            }
 
             try {
                 ApplicationInfo applicationInfo = mContext.getPackageManager().getApplicationInfo(GOOGLE_APP, 0);

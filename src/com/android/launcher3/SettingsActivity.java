@@ -56,7 +56,6 @@ import java.lang.ref.WeakReference;
  */
 public class SettingsActivity extends Activity {
 
-    private static final String ICON_BADGING_PREFERENCE_KEY = "pref_icon_badging";
     /** Hidden field Settings.Secure.NOTIFICATION_BADGING */
     public static final String NOTIFICATION_BADGING = "notification_badging";
     /** Hidden field Settings.Secure.ENABLED_NOTIFICATION_LISTENERS */
@@ -107,21 +106,6 @@ public class SettingsActivity extends Activity {
 
                 // Initialize the UI once
                 rotationPref.setDefaultValue(Utilities.getAllowRotationDefaultValue(getActivity()));
-            }
-
-            ButtonPreference iconBadgingPref =
-                    (ButtonPreference) findPreference(ICON_BADGING_PREFERENCE_KEY);
-            if (!Utilities.ATLEAST_OREO) {
-                getPreferenceScreen().removePreference(
-                        findPreference(SessionCommitReceiver.ADD_ICON_PREFERENCE_KEY));
-            }
-            if (!getResources().getBoolean(R.bool.notification_badging_enabled)) {
-                getPreferenceScreen().removePreference(iconBadgingPref);
-            } else {
-                // Listen to system notification badge settings while this UI is active.
-                mIconBadgingObserver = new IconBadgingObserver(
-                        iconBadgingPref, resolver, getFragmentManager());
-                mIconBadgingObserver.register(NOTIFICATION_BADGING, NOTIFICATION_ENABLED_LISTENERS);
             }
 
             Preference iconShapeOverride = findPreference(IconShapeOverride.KEY_PREFERENCE);
