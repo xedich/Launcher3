@@ -70,7 +70,12 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
         int vuserId = UserManagerCompat.toUserId(user);
 
         VPackageManager pm = VPackageManager.get();
-        List<ResolveInfo> ris = pm.queryIntentActivities(intent, intent.resolveType(context), 0, vuserId);
+        List<ResolveInfo> ris = null;
+        try {
+            ris = pm.queryIntentActivities(intent, intent.resolveType(context), 0, vuserId);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
 
         // Otherwise, try to find a main launcher activity.
         if (ris == null || ris.size() <= 0) {
