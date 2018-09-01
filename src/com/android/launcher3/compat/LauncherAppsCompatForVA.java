@@ -28,7 +28,6 @@ import com.lody.virtual.remote.InstalledAppInfo;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -36,7 +35,7 @@ import java.util.List;
  * author: weishu on 18/2/9.
  */
 
-public class LauncherAppsCompatForVA extends LauncherAppsCompat {
+public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
     private static final String TAG = "LauncherAppsCompatForVA";
 
     private final VirtualCore mVirtualCore;
@@ -44,24 +43,27 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
     private VirtualCore.PackageObserver mPackageObserver;
 
     LauncherAppsCompatForVA() {
+        super(VirtualCore.get().getContext());
         mVirtualCore = VirtualCore.get();
     }
 
     @Override
     public List<LauncherActivityInfo> getActivityList(String packageName, UserHandle user) {
         int vuserId = UserManagerCompat.toUserId(user);
+        List<LauncherActivityInfo> result = new ArrayList<>(super.getActivityList(packageName, user));
+
         if (packageName == null) {
-            List<LauncherActivityInfo> result = new ArrayList<>();
             List<InstalledAppInfo> installedApps = mVirtualCore.getInstalledAppsAsUser(vuserId, 0);
             for (InstalledAppInfo installedApp : installedApps) {
                 List<LauncherActivityInfo> activityListForPackage = getActivityListForPackage(installedApp.packageName);
                 assert activityListForPackage != null;
                 result.addAll(activityListForPackage);
             }
-            return result;
         } else {
-            return getActivityListForPackage(packageName);
+            List<LauncherActivityInfo> activityListForPackage = getActivityListForPackage(packageName);
+            result.addAll(activityListForPackage);
         }
+        return result;
     }
 
     @Override
@@ -86,27 +88,27 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
             ris = pm.queryIntentActivities(intent, intent.resolveType(context), 0, vuserId);
         }
         if (ris == null || ris.size() <= 0) {
-            return null;
+            return super.resolveActivity(intent, user);
         }
 
         try {
             return makeLauncherActivityInfo(context, ris.get(0), Process.myUserHandle());
         } catch (Throwable e) {
             Log.e(TAG, "create launcherActivityInfo failed", e);
-            return null;
+            return super.resolveActivity(intent, user);
         }
     }
 
     @Override
     public void startActivityForProfile(ComponentName component, UserHandle user, Rect sourceBounds, Bundle opts) {
-        throw new RuntimeException("unSupported for startActivity with system multi account");
+        super.startActivityForProfile(component, user, sourceBounds, opts);
     }
 
     @Override
     public ApplicationInfo getApplicationInfo(String packageName, int flags, UserHandle user) {
         InstalledAppInfo installedAppInfo = mVirtualCore.getInstalledAppInfo(packageName, flags);
         if (installedAppInfo == null) {
-            return null;
+            return super.getApplicationInfo(packageName, flags, user);
         }
         return installedAppInfo.getApplicationInfo(0);
     }
@@ -115,6 +117,7 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
     public void showAppDetailsForProfile(ComponentName component, UserHandle user, Rect sourceBounds, Bundle opts) {
         // TODO: 18/2/9
         Toast.makeText(mVirtualCore.getContext(), R.string.the_coming_feature, Toast.LENGTH_SHORT).show();
+        super.showAppDetailsForProfile(component, user, sourceBounds, opts);
     }
 
     @Override
@@ -154,6 +157,7 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
                 }
             }, 1000);
         }
+        super.addOnAppsChangedCallback(listener);
     }
 
     @Override
@@ -161,23 +165,22 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompat {
         if (mPackageObserver != null) {
             mVirtualCore.unregisterObserver(mPackageObserver);
         }
+        super.removeOnAppsChangedCallback(listener);
     }
 
     @Override
     public boolean isPackageEnabledForProfile(String packageName, UserHandle user) {
-        return mVirtualCore.isAppInstalled(packageName);
+        return mVirtualCore.isAppInstalled(packageName) || super.isPackageEnabledForProfile(packageName, user);
     }
 
     @Override
     public boolean isActivityEnabledForProfile(ComponentName component, UserHandle user) {
-        // TODO: 18/2/9
         return true;
     }
 
     @Override
     public List<ShortcutConfigActivityInfo> getCustomShortcutActivityList(@Nullable PackageUserKey packageUser) {
-        // TODO: 18/2/9
-        return Collections.EMPTY_LIST;
+        return super.getCustomShortcutActivityList(packageUser);
     }
 
     private List<LauncherActivityInfo> getActivityListForPackage(String packageName) {
