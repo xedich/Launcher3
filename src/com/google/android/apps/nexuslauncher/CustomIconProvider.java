@@ -27,9 +27,7 @@ import com.google.android.apps.nexuslauncher.clock.CustomClock;
 import com.google.android.apps.nexuslauncher.clock.DynamicClock;
 
 import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -153,7 +151,7 @@ public class CustomIconProvider extends DynamicIconProvider {
                 int resId = Integer.parseInt(appIcon.substring(1));
                 return resourcesForApplication.getDrawableForDensity(resId, iconDpi);
             }
-        } catch (PackageManager.NameNotFoundException | Resources.NotFoundException | IOException | XmlPullParserException ex) {
+        } catch (Throwable ex) {
             ex.printStackTrace();
         }
         return null;
