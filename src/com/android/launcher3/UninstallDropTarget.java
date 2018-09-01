@@ -7,15 +7,19 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.android.launcher3.compat.LauncherAppsCompat;
 import com.android.launcher3.compat.UserManagerCompat;
 import com.lody.virtual.client.core.VirtualCore;
+
+import java.net.URISyntaxException;
 
 public class UninstallDropTarget extends ButtonDropTarget {
 
@@ -121,26 +125,41 @@ public class UninstallDropTarget extends ButtonDropTarget {
             canUninstall = false;
         } else {
             final String packageName = cn.getPackageName();
-            AlertDialog alertDialog = new AlertDialog.Builder(launcher)
-                    .setTitle(R.string.home_menu_delete_title)
-                    .setMessage(launcher.getResources().getString(R.string.home_menu_delete_content, info.title))
-                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                        try {
-                            UserHandle user = info.user;
-                            int userId = UserManagerCompat.toUserId(user);
-                            VirtualCore.get().uninstallPackageAsUser(packageName, userId);
-                        } catch (Throwable e) {
-                            Toast.makeText(launcher, "Uninstall failed, please try again.", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null)
-                    .create();
-            try {
-                alertDialog.show();
-                canUninstall = true;
-            } catch (Throwable ignored) {
-                // BadTokenException.
-                canUninstall = false;
+            boolean isInstalledInVxp = VirtualCore.get().isAppInstalled(packageName);
+            if (isInstalledInVxp) {
+                AlertDialog alertDialog = new AlertDialog.Builder(launcher)
+                        .setTitle(R.string.home_menu_delete_title)
+                        .setMessage(launcher.getResources().getString(R.string.home_menu_delete_content, info.title))
+                        .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                            try {
+                                UserHandle user = info.user;
+                                int userId = UserManagerCompat.toUserId(user);
+                                VirtualCore.get().uninstallPackageAsUser(packageName, userId);
+                            } catch (Throwable e) {
+                                Toast.makeText(launcher, "Uninstall failed, please try again.", Toast.LENGTH_SHORT).show();
+                            }
+
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .create();
+                try {
+                    alertDialog.show();
+                    canUninstall = true;
+                } catch (Throwable ignored) {
+                    // BadTokenException.
+                    canUninstall = false;
+                }
+            } else {
+                try {
+                    Intent i = Intent.parseUri(launcher.getString(R.string.delete_package_intent), 0)
+                            .setData(Uri.fromParts("package", cn.getPackageName(), cn.getClassName()))
+                            .putExtra(Intent.EXTRA_USER, info.user);
+                    launcher.startActivity(i);
+                    canUninstall = true;
+                } catch (URISyntaxException e) {
+                    Log.e(TAG, "Failed to parse intent to start uninstall activity for item=" + info);
+                    canUninstall = false;
+                }
             }
         }
         if (callback != null) {
@@ -151,7 +170,7 @@ public class UninstallDropTarget extends ButtonDropTarget {
 
     /**
      * Notifies the {@param callback} whether the uninstall was successful or not.
-     *
+     * <p>
      * Since there is no direct callback for an uninstall request, we check the package existence
      * when the launch resumes next time. This assumes that the uninstall activity will finish only
      * after the task is completed
@@ -160,7 +179,7 @@ public class UninstallDropTarget extends ButtonDropTarget {
             final Launcher launcher, boolean activityStarted,
             final ComponentName cn, final UserHandle user,
             final DropTargetResultCallback callback) {
-        if (activityStarted)  {
+        if (activityStarted) {
             final Runnable checkIfUninstallWasSuccess = new Runnable() {
                 @Override
                 public void run() {
@@ -180,6 +199,7 @@ public class UninstallDropTarget extends ButtonDropTarget {
     public interface DropTargetResultCallback {
         /**
          * A drag operation was complete.
+         *
          * @param isRemoved true if the drag object should be removed, false otherwise.
          */
         void onDragObjectRemoved(boolean isRemoved);
