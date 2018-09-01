@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Rect;
 import android.os.Build;
@@ -41,19 +42,39 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
 
     private VirtualCore.PackageObserver mPackageObserver;
 
+    private boolean showSystemApp;
+
     LauncherAppsCompatForVA() {
         super(VirtualCore.get().getContext());
         mVirtualCore = VirtualCore.get();
+        showSystemApp = isLauncherEnable(mVirtualCore.getContext());
+    }
+
+    private boolean isLauncherEnable(Context context) {
+        if (context == null) {
+            return false;
+        }
+
+        PackageManager pm = context.getPackageManager();
+        if (pm == null) {
+            return false;
+        }
+        if (pm.getComponentEnabledSetting(new ComponentName(context.getPackageName(), "vxp.launcher")) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+            return true;
+        }
+        return false;
     }
 
     @Override
     public List<LauncherActivityInfo> getActivityList(String packageName, UserHandle user) {
         int vuserId = UserManagerCompat.toUserId(user);
         List<LauncherActivityInfo> result = new ArrayList<>();
-        try {
-            result.addAll(super.getActivityList(packageName, user));
-        } catch (Throwable ignored) {
-            Log.w(TAG, "add super failed", ignored);
+        if (showSystemApp) {
+            try {
+                result.addAll(super.getActivityList(packageName, user));
+            } catch (Throwable ignored) {
+                Log.w(TAG, "add super failed", ignored);
+            }
         }
 
         if (packageName == null) {
@@ -92,9 +113,13 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
             ris = pm.queryIntentActivities(intent, intent.resolveType(context), 0, vuserId);
         }
         if (ris == null || ris.size() <= 0) {
-            try {
-                return super.resolveActivity(intent, user);
-            } catch (Throwable e) {
+            if (showSystemApp) {
+                try {
+                    return super.resolveActivity(intent, user);
+                } catch (Throwable e) {
+                    return null;
+                }
+            } else {
                 return null;
             }
         }
@@ -103,9 +128,13 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
             return makeLauncherActivityInfo(context, ris.get(0), Process.myUserHandle());
         } catch (Throwable e) {
             Log.e(TAG, "create launcherActivityInfo failed", e);
-            try {
-                return super.resolveActivity(intent, user);
-            } catch (Throwable e2) {
+            if (showSystemApp) {
+                try {
+                    return super.resolveActivity(intent, user);
+                } catch (Throwable e2) {
+                    return null;
+                }
+            } else {
                 return null;
             }
         }
@@ -113,10 +142,12 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
 
     @Override
     public void startActivityForProfile(ComponentName component, UserHandle user, Rect sourceBounds, Bundle opts) {
-        try {
-            super.startActivityForProfile(component, user, sourceBounds, opts);
-        } catch (Throwable e) {
-            Log.e(TAG, "startActivityForProfile", e);
+        if (showSystemApp) {
+            try {
+                super.startActivityForProfile(component, user, sourceBounds, opts);
+            } catch (Throwable e) {
+                Log.e(TAG, "startActivityForProfile", e);
+            }
         }
     }
 
@@ -124,10 +155,14 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
     public ApplicationInfo getApplicationInfo(String packageName, int flags, UserHandle user) {
         InstalledAppInfo installedAppInfo = mVirtualCore.getInstalledAppInfo(packageName, flags);
         if (installedAppInfo == null) {
-            try {
-                return super.getApplicationInfo(packageName, flags, user);
-            } catch (Throwable e) {
-                Log.e(TAG, "getApplicationInfo", e);
+            if (showSystemApp) {
+                try {
+                    return super.getApplicationInfo(packageName, flags, user);
+                } catch (Throwable e) {
+                    Log.e(TAG, "getApplicationInfo", e);
+                    return null;
+                }
+            } else {
                 return null;
             }
         }
@@ -136,10 +171,12 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
 
     @Override
     public void showAppDetailsForProfile(ComponentName component, UserHandle user, Rect sourceBounds, Bundle opts) {
-        try {
-            super.showAppDetailsForProfile(component, user, sourceBounds, opts);
-        } catch (Throwable e) {
-            Log.e(TAG, "showAppDetailsForProfile", e);
+        if (showSystemApp) {
+            try {
+                super.showAppDetailsForProfile(component, user, sourceBounds, opts);
+            } catch (Throwable e) {
+                Log.e(TAG, "showAppDetailsForProfile", e);
+            }
         }
     }
 
@@ -180,9 +217,11 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
                 }
             }, 1000);
         }
-        try {
-            super.addOnAppsChangedCallback(listener);
-        } catch (Throwable ignored) {
+        if (showSystemApp) {
+            try {
+                super.addOnAppsChangedCallback(listener);
+            } catch (Throwable ignored) {
+            }
         }
     }
 
@@ -191,9 +230,11 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
         if (mPackageObserver != null) {
             mVirtualCore.unregisterObserver(mPackageObserver);
         }
-        try {
-            super.removeOnAppsChangedCallback(listener);
-        } catch (Throwable ignored) {
+        if (showSystemApp) {
+            try {
+                super.removeOnAppsChangedCallback(listener);
+            } catch (Throwable ignored) {
+            }
         }
     }
 
@@ -201,20 +242,17 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
     public boolean isPackageEnabledForProfile(String packageName, UserHandle user) {
         if (mVirtualCore.isAppInstalled(packageName)) {
             return true;
+        }
+
+        if (showSystemApp) {
+            try {
+                return super.isPackageEnabledForProfile(packageName, user);
+            } catch (Throwable throwable) {
+                return false;
+            }
         } else {
             return false;
         }
-
-//        Log.i(TAG, "is package enable for : " + packageName);
-//
-//        if (TextUtils.equals(mVirtualCore.getHostPkg(), packageName)) {
-//            return false;
-//        }
-//        try {
-//            return super.isPackageEnabledForProfile(packageName, user);
-//        } catch (Throwable throwable) {
-//            return false;
-//        }
     }
 
     @Override
