@@ -637,7 +637,7 @@ public class IconCache {
                             appInfo.loadIcon(mPackageManager), user, mContext, appInfo.targetSdkVersion);
                     if (mInstantAppResolver.isInstantApp(appInfo)) {
                         icon = LauncherIcons.badgeWithDrawable(icon,
-                                mContext.getDrawable(R.drawable.ic_instant_app_badge), mContext);
+                                mContext.getDrawable(R.drawable.ic_launcher_home), mContext);
                     }
                     Bitmap lowResIcon =  generateLowResIcon(icon);
                     entry.title = appInfo.loadLabel(mPackageManager);

@@ -38,7 +38,6 @@
         android:id="@+id/overflow"
         android:layout_width="@dimen/horizontal_ellipsis_size"
         android:layout_height="@dimen/horizontal_ellipsis_size"
-        android:background="@drawable/horizontal_ellipsis"
         android:layout_marginStart="@dimen/horizontal_ellipsis_offset"
         android:layout_gravity="start|center_vertical" />
 
