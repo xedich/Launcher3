@@ -4,18 +4,25 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.SwitchPreference;
 import android.preference.TwoStatePreference;
 import android.text.TextUtils;
+import android.util.Log;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.android.launcher3.R;
 
@@ -24,6 +31,8 @@ public class SettingsActivity extends com.android.launcher3.SettingsActivity imp
     public final static String SHOW_PREDICTIONS_PREF = "pref_show_predictions";
     public final static String ENABLE_MINUS_ONE_PREF = "pref_enable_minus_one";
     public final static String SMARTSPACE_PREF = "pref_smartspace";
+    public final static String APP_VERSION_PREF = "about_app_version";
+    private final static String BRIDGE_TAG = "tag_bridge";
     private final static String GOOGLE_APP = "com.google.android.googlequicksearchbox";
 
     @Override
@@ -57,6 +66,7 @@ public class SettingsActivity extends com.android.launcher3.SettingsActivity imp
             mContext = getActivity();
 
             findPreference(SHOW_PREDICTIONS_PREF).setOnPreferenceChangeListener(this);
+            findPreference(ENABLE_MINUS_ONE_PREF).setOnPreferenceChangeListener(this);
             findPreference(ENABLE_MINUS_ONE_PREF).setTitle(getDisplayGoogleTitle());
 
             try {
@@ -95,11 +105,26 @@ public class SettingsActivity extends com.android.launcher3.SettingsActivity imp
         public void onResume() {
             super.onResume();
             mIconPackPref.reloadIconPacks();
+
+            SwitchPreference minusOne = (SwitchPreference) findPreference(ENABLE_MINUS_ONE_PREF);
+            if (minusOne != null && !PixelBridge.isInstalled(getActivity())) {
+                minusOne.setChecked(false);
+            }
         }
 
         @Override
         public boolean onPreferenceChange(Preference preference, final Object newValue) {
             switch (preference.getKey()) {
+                case ENABLE_MINUS_ONE_PREF:
+                    if (PixelBridge.isInstalled(getActivity())) {
+                        return true;
+                    }
+                    FragmentManager fm = getFragmentManager();
+                    if (fm.findFragmentByTag(BRIDGE_TAG) == null) {
+                        InstallFragment fragment = new InstallFragment();
+                        fragment.show(fm, BRIDGE_TAG);
+                    }
+                    break;
                 case ICON_PACK_PREF:
                     if (!CustomIconUtils.getCurrentPack(mContext).equals(newValue)) {
                         final ProgressDialog applyingDialog = ProgressDialog.show(mContext,
@@ -132,6 +157,19 @@ public class SettingsActivity extends com.android.launcher3.SettingsActivity imp
         }
     }
 
+    public static class OpenSourceLicensesFragment extends DialogFragment {
+        public Dialog onCreateDialog(Bundle bundle) {
+            WebView view = new WebView(getActivity());
+            view.setWebViewClient(new WebViewClient());
+            view.getSettings().setBuiltInZoomControls(true);
+            view.loadUrl("file:///android_asset/license.html");
+            return new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.pref_open_source_licenses_title)
+                    .setView(view)
+                    .create();
+        }
+    }
+
     public static class SuggestionConfirmationFragment extends DialogFragment implements DialogInterface.OnClickListener {
         public void onClick(final DialogInterface dialogInterface, final int n) {
             if (getTargetFragment() instanceof PreferenceFragment) {
@@ -148,6 +186,17 @@ public class SettingsActivity extends com.android.launcher3.SettingsActivity imp
                     .setMessage(R.string.msg_disable_suggestions_prompt)
                     .setNegativeButton(android.R.string.cancel, null)
                     .setPositiveButton(R.string.label_turn_off_suggestions, this).create();
+        }
+    }
+
+    public static class InstallFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(final Bundle bundle) {
+            return new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.bridge_missing_title)
+                    .setMessage(R.string.bridge_missing_message)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .create();
         }
     }
 }

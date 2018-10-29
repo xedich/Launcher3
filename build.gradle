@@ -1,12 +1,12 @@
 buildscript {
     repositories {
-        jcenter()
         mavenCentral()
         jcenter()
         google()
     }
+
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'com.android.tools.build:gradle:3.1.3'
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.3'
     }
 }
@@ -16,13 +16,13 @@ apply plugin: 'com.google.protobuf'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '26.0.2'
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 1
-        versionName "3.4"
+        versionCode 30907
+        versionName "3.9"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -31,6 +31,18 @@ android {
             minifyEnabled false
         }
 
+        optimized {
+            initWith debug
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                    'proguard.flags'
+        }
+
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                    'proguard.flags'
+        }
 //        optimized {
 //            initWith debug
 //            minifyEnabled true
@@ -110,22 +122,21 @@ repositories {
     google()
 }
 
-final String SUPPORT_LIBS_VERSION = '26.0.+'
+final String SUPPORT_LIBS_VERSION = '27.1.1'
 dependencies {
-    compile project(":lib")
-    compile "com.android.support:support-v4:${SUPPORT_LIBS_VERSION}"
-    compile "com.android.support:support-dynamic-animation:${SUPPORT_LIBS_VERSION}"
-    compile "com.android.support:recyclerview-v7:${SUPPORT_LIBS_VERSION}"
-    compile "com.android.support:palette-v7:${SUPPORT_LIBS_VERSION}"
-    compile 'com.google.protobuf.nano:protobuf-javanano:3.0.0-alpha-7'
+    implementation "com.android.support:support-v4:${SUPPORT_LIBS_VERSION}"
+    implementation "com.android.support:support-dynamic-animation:${SUPPORT_LIBS_VERSION}"
+    implementation "com.android.support:recyclerview-v7:${SUPPORT_LIBS_VERSION}"
+    implementation "com.android.support:palette-v7:${SUPPORT_LIBS_VERSION}"
+    implementation 'com.google.protobuf.nano:protobuf-javanano:3.2.0rc2'
 
-    testCompile 'junit:junit:4.12'
-    androidTestCompile "org.mockito:mockito-core:1.9.5"
-    androidTestCompile 'com.google.dexmaker:dexmaker:1.2'
-    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
-    androidTestCompile 'com.android.support.test:runner:0.5'
-    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.2'
-    androidTestCompile "com.android.support:support-annotations:${SUPPORT_LIBS_VERSION}"
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation "org.mockito:mockito-core:1.10.19"
+    androidTestImplementation 'com.google.dexmaker:dexmaker:1.2'
+    androidTestImplementation 'com.google.dexmaker:dexmaker-mockito:1.2'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.uiautomator:uiautomator-v18:2.1.3'
+    androidTestImplementation "com.android.support:support-annotations:${SUPPORT_LIBS_VERSION}"
 }
 
 protobuf {

@@ -132,7 +132,7 @@ public class CustomIconProvider extends DynamicIconProvider {
                     for (int i = 0; i < parseXml.getAttributeCount(); i++) {
                         elementTags.put(parseXml.getAttributeName(i), parseXml.getAttributeValue(i));
                     }
-                    if (elementTags.containsKey("roundIcon")) {
+                    if (elementTags.containsKey("icon")) {
                         if (name.equals("application")) {
                             appIcon = elementTags.get("roundIcon");
                         } else if ((name.equals("activity") || name.equals("activity-alias")) &&
@@ -148,8 +148,10 @@ public class CustomIconProvider extends DynamicIconProvider {
             parseXml.close();
 
             if (appIcon != null) {
-                int resId = Integer.parseInt(appIcon.substring(1));
-                return resourcesForApplication.getDrawableForDensity(resId, iconDpi);
+                int resId = resourcesForApplication.getIdentifier(appIcon, null, component.getPackageName());
+                return resourcesForApplication.getDrawableForDensity(resId == 0
+                        ? Integer.parseInt(appIcon.substring(1))
+                        : resId, iconDpi);
             }
         } catch (Throwable ex) {
             ex.printStackTrace();

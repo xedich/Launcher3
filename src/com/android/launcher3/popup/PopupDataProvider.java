@@ -25,6 +25,7 @@ import android.util.Log;
 
 import com.android.launcher3.ItemInfo;
 import com.android.launcher3.Launcher;
+import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.badge.BadgeInfo;
 import com.android.launcher3.notification.NotificationInfo;
@@ -54,14 +55,7 @@ public class PopupDataProvider implements NotificationListener.NotificationsChan
     private static final String TAG = "PopupDataProvider";
 
     /** Note that these are in order of priority. */
-    private static final SystemShortcut[] SYSTEM_SHORTCUTS = new SystemShortcut[] {
-            new SystemShortcut.Edit(),
-            new SystemShortcut.AppInfo(),
-            new SystemShortcut.Widgets(),
-            new SystemShortcut.ClearApp(),
-            new SystemShortcut.KillApp(),
-            new SystemShortcut.CreateDesktopShortcut()
-    };
+    private final SystemShortcut[] mSystemShortcuts;
 
     private final Launcher mLauncher;
 
@@ -72,6 +66,14 @@ public class PopupDataProvider implements NotificationListener.NotificationsChan
 
     public PopupDataProvider(Launcher launcher) {
         mLauncher = launcher;
+        mSystemShortcuts = new SystemShortcut[] {
+                Utilities.getOverrideObject(SystemShortcut.Custom.class, launcher, R.string.custom_shortcut_class),
+                new SystemShortcut.AppInfo(),
+                new SystemShortcut.Widgets(),
+                new SystemShortcut.ClearApp(),
+                new SystemShortcut.KillApp(),
+                new SystemShortcut.CreateDesktopShortcut()
+        };
     }
 
     @Override
@@ -231,7 +233,7 @@ public class PopupDataProvider implements NotificationListener.NotificationsChan
             return Collections.EMPTY_LIST;
         }
 
-        if (Utilities.ATLEAST_MARSHMALLOW && !Utilities.ATLEAST_NOUGAT_MR1) {
+        if (!Utilities.ATLEAST_NOUGAT_MR1) {
             List<String> ids = new ArrayList<>();
             for (ShortcutInfoCompat compat : DeepShortcutManagerBackport.getForPackage(mLauncher,
                     (LauncherApps) mLauncher.getSystemService(Context.LAUNCHER_APPS_SERVICE),
@@ -268,7 +270,7 @@ public class PopupDataProvider implements NotificationListener.NotificationsChan
 
     public @NonNull List<SystemShortcut> getEnabledSystemShortcutsForItem(ItemInfo info) {
         List<SystemShortcut> systemShortcuts = new ArrayList<>();
-        for (SystemShortcut systemShortcut : SYSTEM_SHORTCUTS) {
+        for (SystemShortcut systemShortcut : mSystemShortcuts) {
             if (systemShortcut.getOnClickListener(mLauncher, info) != null) {
                 systemShortcuts.add(systemShortcut);
             }
