@@ -8,6 +8,7 @@ import android.support.animation.SpringAnimation;
 import android.support.annotation.NonNull;
 import android.support.v4.graphics.ColorUtils;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
@@ -58,18 +59,6 @@ public class AllAppsQsbLayout extends AbstractQsbLayout implements SearchUiManag
                 allAppsQsbLayout.setTranslationY(Math.round(mStartY + v));
             }
         }, 0f);
-    }
-
-    private void searchFallback() {
-        if (mFallback != null) {
-            mFallback.showKeyboard();
-            return;
-        }
-        setOnClickListener(null);
-        mFallback = (FallbackAppsSearchView) mActivity.getLayoutInflater().inflate(R.layout.all_apps_google_search_fallback, this, false);
-        mFallback.bu(this, mApps, mRecyclerView);
-        addView(mFallback);
-        mFallback.showKeyboard();
     }
 
     public void addOnScrollRangeChangeListener(final SearchUiManager.OnScrollRangeChangeListener onScrollRangeChangeListener) {
@@ -140,6 +129,16 @@ public class AllAppsQsbLayout extends AbstractQsbLayout implements SearchUiManag
         mRecyclerView = recyclerView;
     }
 
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+
+        int statusBarHeightId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        ((ViewGroup.MarginLayoutParams) getLayoutParams()).topMargin += getResources().getDimensionPixelSize(statusBarHeightId > 0 ?
+                statusBarHeightId :
+                R.dimen.status_bar_height);
+    }
+
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         WallpaperColorInfo instance = WallpaperColorInfo.getInstance(getContext());
@@ -149,15 +148,14 @@ public class AllAppsQsbLayout extends AbstractQsbLayout implements SearchUiManag
 
     public void onClick(final View view) {
         super.onClick(view);
-        if (view == this) {
-            if (!Utilities.ATLEAST_NOUGAT) {
-                searchFallback();
-                return;
+        if (view == this && (mFallback == null || mFallback.getVisibility() == View.GONE)) {
+            if (Utilities.ATLEAST_OREO) {
+                final ConfigBuilder config = new ConfigBuilder(this, true);
+                if (mActivity.getGoogleNow().startSearch(config.build(), config.getExtras())) {
+                    return;
+                }
             }
-            final ConfigBuilder f = new ConfigBuilder(this, true);
-            if (!mActivity.getGoogleNow().startSearch(f.build(), f.getExtras())) {
-                searchFallback();
-            }
+            startAppsSearch();
         }
     }
 
@@ -167,11 +165,31 @@ public class AllAppsQsbLayout extends AbstractQsbLayout implements SearchUiManag
     }
 
     public void onExtractedColorsChanged(final WallpaperColorInfo wallpaperColorInfo) {
-        int color = Themes.getAttrBoolean(mActivity, R.attr.isMainColorDark) ? 0xEBFFFFFE : 0xCCFFFFFE;
+        int color = getResources().getColor(Themes.getAttrBoolean(mActivity, R.attr.isMainColorDark) ? R.color.qsb_background_drawer_dark : R.color.qsb_background_drawer_default);
         bz(ColorUtils.compositeColors(ColorUtils.compositeColors(color, Themes.getAttrColor(mActivity, R.attr.allAppsScrimColor)), wallpaperColorInfo.getMainColor()));
     }
 
     public void preDispatchKeyEvent(final KeyEvent keyEvent) {
+    }
+
+    @Override
+    public void startAppsSearch() {
+        if (mFallback == null) {
+            mFallback = (FallbackAppsSearchView) mActivity.getLayoutInflater()
+                    .inflate(R.layout.all_apps_google_search_fallback, this, false);
+            mFallback.initialize(this, mApps, mRecyclerView);
+            mFallback.setOnFocusChangeListener(new OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (!hasFocus && TextUtils.isEmpty(mFallback.getText())) {
+                        mFallback.setVisibility(View.GONE);
+                    }
+                }
+            });
+            addView(mFallback);
+        }
+        mFallback.setVisibility(View.VISIBLE);
+        mFallback.showKeyboard();
     }
 
     public void refreshSearchResult() {
