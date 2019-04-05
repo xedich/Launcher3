@@ -124,6 +124,7 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
             }
         }
 
+
         try {
             return makeLauncherActivityInfo(context, ris.get(0), Process.myUserHandle());
         } catch (Throwable e) {
@@ -306,6 +307,10 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
             ResolveInfo next = iterator.next();
             if (next.activityInfo.targetActivity != null) {
                 // alias, remove it
+                iterator.remove();
+            }
+            if (!next.activityInfo.enabled) {
+                // disabled component ,remove it
                 iterator.remove();
             }
         }
