@@ -308,6 +308,7 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
             if (next.activityInfo.targetActivity != null) {
                 // alias, remove it
                 iterator.remove();
+                continue;
             }
             if (!next.activityInfo.enabled) {
                 // disabled component ,remove it
