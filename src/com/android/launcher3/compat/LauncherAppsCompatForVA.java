@@ -334,6 +334,17 @@ public class LauncherAppsCompatForVA extends LauncherAppsCompatVL {
 
     private static LauncherActivityInfo makeLauncherActivityInfo(Context context, ResolveInfo resolveInfo, UserHandle userHandle) {
         try {
+            if (Build.VERSION.SDK_INT > 30 || (Build.VERSION.SDK_INT == 30 && Build.VERSION.PREVIEW_SDK_INT != 0)) {
+                Class<?> infoInternalClass = Class.forName("android.content.pm.LauncherActivityInfoInternal");
+                Class<?> IncrementalStatesInfo_Class = Class.forName("android.content.pm.IncrementalStatesInfo");
+
+                Constructor<?> LauncherActivityInfoInternal_cons = infoInternalClass.getConstructor(ActivityInfo.class, IncrementalStatesInfo_Class);
+                Constructor<LauncherActivityInfo> constructor = LauncherActivityInfo.class.getDeclaredConstructor(Context.class, UserHandle.class, infoInternalClass);
+                constructor.setAccessible(true);
+
+                Object launcherActivityInfoInternal = LauncherActivityInfoInternal_cons.newInstance(resolveInfo.activityInfo, null);
+                return constructor.newInstance(context, userHandle, launcherActivityInfoInternal);
+            }
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
                 Constructor<LauncherActivityInfo> constructor = LauncherActivityInfo.class.getDeclaredConstructor(Context.class, ActivityInfo.class, UserHandle.class);
                 constructor.setAccessible(true);
