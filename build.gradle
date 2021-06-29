@@ -7,7 +7,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.1'
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.6'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.13'
     }
 }
 
@@ -19,6 +19,7 @@ android {
     buildToolsVersion '28.0.3'
 
     defaultConfig {
+        minSdkVersion 21
         targetSdkVersion 27
         versionCode 30907
         versionName "3.9"
